@@ -1,118 +1,118 @@
-# Questions RouteBrain Is Designed to Answer
+# Perguntas que o RouteBrain pretende responder
 
-RouteBrain aims to turn network observations into a contextual, temporal representation that helps an operator reason about the network's experience of the Internet. Storing BGP provides a reference layer for that purpose.
+O RouteBrain pretende transformar observações de rede em uma representação contextual e temporal que ajude o operador a compreender a Internet experimentada por sua própria rede. Armazenar BGP fornece uma camada de referência para esse propósito.
 
-The central question is broader than where a route is now: **what it was, where it passed, in what context it was observed, what changed, and which earlier operator actions were associated with those changes.** These questions often require evidence spread across routing tables, measurements, inventory and operator records.
+A pergunta central vai além de onde uma rota está agora: **como ela era, por onde passou, em qual contexto foi observada, o que mudou e quais ações anteriores estiveram associadas a essas mudanças**. Essas perguntas frequentemente exigem evidências distribuídas entre tabelas de roteamento, medições, inventário e registros do operador.
 
-The questions below are grouped by maturity. They do **not** mean that the current implementation answers every question end to end. An **implemented building block** supplies part of an answer; **experimental** components explore how to connect evidence; other questions **require accumulated observations** or remain **architectural direction**.
+As perguntas abaixo estão agrupadas por maturidade. Elas **não** significam que a implementação atual responde a todas end-to-end. Um componente **IMPLEMENTADO** fornece parte da resposta; componentes **EXPERIMENTAIS** exploram como conectar evidências; outras perguntas **dependem de observações acumuladas** ou permanecem como **DIREÇÃO ARQUITETURAL**.
 
-## Questions supported by existing building blocks
+## Já suportadas por componentes existentes
 
-| Operator question | Existing components and answer boundary |
+| Pergunta do operador | Componentes existentes e limite da resposta |
 |---|---|
-| What BGP prefix contains this destination? | Longest-prefix matching (LPM) against the PostgreSQL routing reference finds the most specific available prefix. The answer is bounded by that reference dataset. |
-| Which origin ASN is associated with this observed prefix? | MRT projection, raw/current route storage and BGP queries provide recorded origin-ASN context. This is routing evidence, not proof of the identity of every responding hop. |
-| Which destinations are actually being used by this operator's network? | Observed-destination collection and persistence record destinations visible to the configured traffic source. Collection coverage and observation time limit the answer. |
-| What path was observed toward this destination? | Traceroute collection, parsing and stored runs provide a path observation from a particular vantage point and time. It is not a universal path or a complete physical topology. |
-| Which hops responded during a traceroute? | Traceroute parsing and hop records distinguish responding addresses from missing responses. A silent hop does not identify a device. |
-| Have parts of this path been observed before? | Experimental route memory, segment matching and graph snapshots can associate recurring path evidence with stored observations. Matching a segment does not establish perfect device identity. |
-| What BGP, inventory or enrichment evidence is already known about this destination? | BGP queries, inventory, enrichment and caches supply context. Experimental route reports, semantic documents and retrieval help assemble existing evidence; provenance and freshness still matter. |
-| What evidence is missing before RouteBrain can give a stronger answer? | Report diagnostics, graph validation and evidence fields expose some missing BGP, hop or inventory context. Experimental semantic documents can surface available evidence, but retrieval cannot fill an observation gap or certify completeness. |
+| Qual prefixo BGP contém este destino? | Longest Prefix Match (LPM) sobre a referência de roteamento em PostgreSQL encontra o prefixo mais específico disponível. A resposta é limitada por esse dataset de referência. |
+| Qual ASN de origem está associado a este prefixo observado? | Projeção MRT, armazenamento raw/current e consultas BGP fornecem o contexto de ASN de origem registrado. É evidência de roteamento, não prova da identidade de cada hop que responde. |
+| Quais destinos são realmente utilizados pela rede deste operador? | Coleta e persistência de observed destinations registram destinos visíveis na fonte de tráfego configurada. Cobertura da coleta e momento da observação limitam a resposta. |
+| Qual caminho foi observado até este destino? | Coleta, parsing e execuções armazenadas de traceroute fornecem uma observação de caminho a partir de um ponto e momento específicos. Não é um caminho universal nem uma topologia física completa. |
+| Quais hops responderam durante um traceroute? | Parsing de traceroute e registros de hops distinguem endereços que responderam de respostas ausentes. Um hop silencioso não identifica um dispositivo. |
+| Partes deste caminho já foram observadas antes? | Route memory, correspondência de segmentos e snapshots de grafos experimentais podem associar evidências recorrentes de caminho a observações armazenadas. Correspondência de segmento não estabelece identidade perfeita de dispositivo. |
+| Quais evidências BGP, de inventário ou enriquecimento já conhecemos sobre este destino? | Consultas BGP, inventário, enriquecimento e caches fornecem contexto. Relatórios, documentos semânticos e recuperação experimentais ajudam a reunir evidências existentes; proveniência e atualidade continuam importantes. |
+| Que evidência falta para o RouteBrain oferecer uma resposta mais forte? | Diagnósticos de relatórios, validação de grafos e campos de evidência expõem algumas lacunas de contexto BGP, hops ou inventário. Documentos semânticos experimentais podem recuperar evidências disponíveis, mas a recuperação não preenche lacunas de observação nem certifica completude. |
 
-These components run through separate operations. Their existence does not establish a complete automatic traffic-to-answer pipeline. See [Architecture](../ARCHITECTURE.md) for component boundaries and [Validation](VALIDATION.md) for the public test scope.
+Esses componentes atuam por operações separadas. Sua existência não estabelece um pipeline automático completo do tráfego à resposta. Veja a [arquitetura](../ARCHITECTURE.md) para as fronteiras dos componentes e a [validação, em inglês](VALIDATION.md) para o escopo dos testes públicos.
 
-## Questions that require accumulated temporal knowledge
+## Dependem de histórico acumulado
 
-These questions require multiple temporally valid observations, with their vantage points, timestamps, provenance and coverage preserved. The current historical RIB alone does not provide a week of observed paths or a timeline of routing events. Repeated ingestion of a snapshot does not create that history.
+Essas perguntas exigem múltiplas observações temporalmente válidas, preservando pontos de observação, timestamps, proveniência e cobertura. A RIB histórica atual, sozinha, não fornece uma semana de caminhos observados nem uma linha do tempo de eventos de roteamento. Reingerir um snapshot não cria esse histórico.
 
-| Operator question | Evidence required |
+| Pergunta do operador | Evidência necessária |
 |---|---|
-| How was this network or destination reached one week ago? | Retained path observations from that period and the relevant vantage point, with routing context valid at that time. If they were never collected, the answer must remain unknown. |
-| What changed between the path observed at T1 and the path observed at T2? | Comparable timestamped runs, destination and vantage-point context, and explicit handling of missing responses. Experimental report comparison is a foundation, not general historical reconstruction. |
-| When did this element first appear in this path? | A retained observation sequence and contextual matching. “First observed” is bounded by collection coverage; it is not necessarily when the element first existed. |
-| Is this the same network element observed previously under another context? | Repeated address, neighbor, path-position and other identity evidence. Accumulated history is necessary but insufficient: cross-context entity resolution remains architectural direction. |
-| Which adjacencies are stable and which ones changed over time? | Repeated comparable path observations and relationship matching. Observed hop adjacency is not proof of a physical link. |
-| Did latency change together with a routing-path change? | Time-aligned ping/traceroute measurements and routing observations with compatible scope. Co-occurrence supports investigation, not a causal conclusion. |
-| Which destinations began using a different upstream or path? | Repeated destination/path observations, ASN context and, where available, edge or upstream evidence from the same network viewpoint. |
-| What did the operator's relevant Internet look like before a given event? | Sufficiently retained, time-scoped destination, path and relationship evidence. Any representation must show gaps; complete point-in-time reconstruction is not implemented. |
+| Como essa rede ou destino era alcançado uma semana atrás? | Observações de caminho retidas daquele período e do ponto de observação relevante, com contexto de roteamento válido na época. Se nunca foram coletadas, a resposta deve permanecer desconhecida. |
+| O que mudou entre o caminho observado em T1 e o observado em T2? | Execuções comparáveis com timestamps, contexto de destino e ponto de observação e tratamento explícito de respostas ausentes. A comparação experimental de relatórios é uma base, não reconstrução histórica geral. |
+| Quando esse elemento apareceu pela primeira vez nesse caminho? | Uma sequência de observações retidas e correspondência contextual. “Primeiro observado” é limitado pela cobertura da coleta; não é necessariamente quando o elemento passou a existir. |
+| Esse é o mesmo elemento de rede observado anteriormente em outro contexto? | Evidências recorrentes de endereço, vizinhos, posição no caminho e outros aspectos da identidade. Acumular histórico é necessário, mas insuficiente: entity resolution entre contextos permanece direção arquitetural. |
+| Quais adjacências são estáveis e quais mudaram ao longo do tempo? | Observações repetidas de caminhos comparáveis e correspondência entre relações. Adjacência entre hops observados não prova ligação física. |
+| A latência mudou junto com uma mudança de caminho de roteamento? | Medições de ping/traceroute e observações de roteamento alinhadas no tempo, com escopo compatível. Coocorrência apoia a investigação, não uma conclusão causal. |
+| Quais destinos passaram a usar outro upstream ou caminho? | Observações repetidas de destinos/caminhos, contexto de ASN e, quando disponíveis, evidências de borda ou upstream a partir do mesmo ponto de vista da rede. |
+| Como era a Internet relevante ao operador antes de um determinado evento? | Evidências de destinos, caminhos e relações suficientemente retidas e delimitadas no tempo. Qualquer representação precisa mostrar lacunas; reconstrução completa em um instante arbitrário não está implementada. |
 
-Temporal persistence and comparison exist experimentally. General historical answers additionally require retention, freshness rules, consistent identities and reconciliation of invalid derived evidence. The [CIDR postmortem](CIDR32_POSTMORTEM.md) explains why recovered reference tables do not automatically make every historical derivative valid.
+Persistência temporal e comparação existem experimentalmente. Respostas históricas gerais também exigem retenção, regras de atualidade, identidades consistentes e reconciliação de evidências derivadas inválidas. O [postmortem CIDR](CIDR32_POSTMORTEM.md) explica por que recuperar a referência não torna automaticamente válido todo derivado histórico.
 
-## Architectural questions / future reasoning
+## Direção arquitetural
 
-The longer-term direction connects policy and action records with observations before and after a change:
+A direção de longo prazo conecta registros de políticas e ações às observações antes e depois de uma mudança:
 
-- When this routing policy changed previously, what changed in the paths observed from the network?
-- Which past policy changes were associated with traffic moving from one edge or upstream to another?
-- If an operator wants to influence inbound traffic toward another edge, what historical evidence is relevant before changing BGP communities?
-- Which BGP community or policy options are plausible candidates for producing the desired routing effect?
-- What evidence supports that recommendation?
-- What observations would be required to validate the result after the change?
+- Quando essa política de roteamento mudou anteriormente, o que mudou nos caminhos observados a partir da rede?
+- Quais mudanças de política anteriores estiveram associadas à migração de tráfego entre bordas ou upstreams?
+- Se o operador quer influenciar o tráfego de entrada por outra borda, que evidência histórica é relevante antes de alterar BGP communities?
+- Quais BGP communities ou opções de política são candidatas plausíveis para produzir o efeito de roteamento desejado?
+- Que evidência sustenta essa recomendação?
+- Que observações seriam necessárias para validar o resultado após a mudança?
 
-The intended evidence sequence is:
+A sequência de evidências pretendida é:
 
 ```text
-policy/action
-→ observation before
-→ change
-→ observation after
-→ contextual/temporal correlation
+política/ação
+→ observação antes
+→ mudança
+→ observação depois
+→ correlação contextual/temporal
 ```
 
-Here, policy/action identifies the proposed or recorded intervention; the actual change follows the baseline observation. Useful records would include intended effect, policy scope, relevant edges or upstreams, timing and other concurrent changes. Comparing before/after observations could then surface similar past situations and their limits.
+Aqui, política/ação identifica a intervenção proposta ou registrada; a mudança efetiva vem depois da observação de baseline. Registros úteis incluiriam efeito pretendido, escopo da política, bordas ou upstreams relevantes, horários e outras mudanças simultâneas. Comparar observações antes/depois poderia recuperar situações anteriores semelhantes e seus limites.
 
-**This is architectural direction. RouteBrain does not currently provide an operational automatic BGP-community recommendation or execution loop.** Candidate policies would require evidence of the relevant upstream's supported policy semantics and operator review. Historical association does not prove causality or guarantee a future result.
+**Isso é direção arquitetural. O RouteBrain não oferece hoje um ciclo operacional automático de recomendação ou execução de BGP communities.** Políticas candidatas exigiriam evidência da semântica de políticas suportada pelo upstream relevante e revisão do operador. Associação histórica não prova causalidade nem garante resultado futuro.
 
-Inbound-traffic questions also require observations that actually cover inbound behavior, such as relevant traffic/edge records or external vantage points. An outbound traceroute alone cannot establish how traffic enters the network. Validation would need observations of the intended effect after the change, with uncertainty and competing explanations retained.
+Perguntas sobre tráfego de entrada também exigem observações que cubram esse comportamento, como registros relevantes de tráfego/borda ou pontos de observação externos. Um traceroute de saída sozinho não estabelece como o tráfego entra na rede. A validação precisaria observar o efeito pretendido depois da mudança, preservando incertezas e explicações alternativas.
 
-## Why these questions become possible
+## Por que essas perguntas se tornam possíveis
 
-The intended composition connects evidence to an operator answer:
+A composição pretendida conecta a evidência à resposta do operador:
 
 ```text
-Observed traffic
-→ destination
-→ prefix/LPM
-→ BGP context
-→ enrichment
-→ active observation
-→ contextual entity/relationship
-→ timestamped memory
-→ comparison with previous observations
-→ operator answer
+Tráfego observado
+→ destino
+→ prefixo/LPM
+→ contexto BGP
+→ enriquecimento
+→ observação ativa
+→ entidade/relação contextual
+→ memória com timestamp
+→ comparação com observações anteriores
+→ resposta ao operador
 ```
 
-Traffic supplies the working set. LPM and enrichment connect a destination to reference context; deliberately selected measurements add observations; contextual relationships and timestamps make comparison meaningful. Semantic documents and retrieval can help locate that evidence for an answer. They do not create missing history.
+O tráfego fornece o working set. LPM e enriquecimento conectam um destino ao contexto de referência; medições selecionadas deliberadamente acrescentam observações; relações contextuais e timestamps tornam a comparação significativa. Documentos semânticos e recuperação podem ajudar a localizar evidências para uma resposta. Eles não criam histórico ausente.
 
-In the intended materialization strategy, existing knowledge is reused when its provenance, freshness and context remain valid. A newly observed destination should materialize only newly relevant parts of the graph and update affected relationships, rather than rebuild all knowledge. The automatic controller and comprehensive invalidation policy remain unfinished.
+Na estratégia de materialização pretendida, o conhecimento existente é reutilizado quando proveniência, atualidade e contexto permanecem válidos. Um destino recém-observado deve materializar apenas partes novas e relevantes do grafo e atualizar relações afetadas, em vez de reconstruir todo o conhecimento. O controlador automático e a política abrangente de invalidação continuam incompletos.
 
-As observations accumulate, the operator can build an increasingly complete representation of **the Internet its own network actually experiences**, within the limits of collection coverage. This is the practical connection between selective materialization, contextual identity, temporal memory and operator reasoning.
+Com o acúmulo de observações, o operador pode construir uma representação cada vez mais completa da **Internet que sua própria rede realmente experimenta**, dentro dos limites da cobertura de coleta. Essa é a conexão prática entre materialização seletiva, identidade contextual, memória temporal e raciocínio do operador.
 
-## Contextual identity: observed address versus entity
+## Identidade contextual: endereço observado e entidade
 
-**IP address != entity identity.** A private or reused address can occur in multiple contexts. The same address alone cannot prove that two observations refer to the same element; a different address alone need not prove that they refer to different elements.
+**IP address != entity identity.** Um endereço privado ou reutilizado pode aparecer em múltiplos contextos. O mesmo endereço sozinho não prova que duas observações se referem ao mesmo elemento; um endereço diferente sozinho também não prova que se referem a elementos distintos.
 
-A future contextual identity may combine:
+Uma identidade contextual futura pode combinar:
 
-- vantage point;
-- predecessor and successor;
-- ASN context;
-- path position;
-- interfaces and other evidence, when available;
-- recurrence;
+- vantage point, ou ponto de observação;
+- predecessor e sucessor;
+- contexto de ASN;
+- posição no caminho;
+- interfaces e outras evidências, quando disponíveis;
+- recorrência;
 - timestamps;
-- neighboring entities.
+- entidades vizinhas.
 
-The architectural direction separates the **observed address** from an internal, opaque **contextual entity identity**, potentially represented by a hexadecimal fingerprint/hash. The final identity algorithm is not implemented. Existing experimental segment fingerprints and graph keys are building blocks, not the completed identity model.
+A direção arquitetural separa o **endereço observado** de uma **identidade contextual de entidade** interna e opaca, potencialmente representada por fingerprint/hash hexadecimal. O algoritmo definitivo de identidade não está implementado. Fingerprints experimentais de segmentos e chaves de grafos existentes são componentes de base, não o modelo de identidade concluído.
 
-A hash can encode selected evidence; it cannot establish that the evidence identifies a unique router. Resolving ambiguity, deciding when identities should merge or split, and preserving identity across context changes remain open work. Uncertain matches must stay uncertain.
+Um hash pode codificar evidências selecionadas; não estabelece que elas identificam um roteador único. Resolver ambiguidades, decidir quando identidades devem ser unidas ou separadas e preservar identidade entre mudanças de contexto continuam como trabalho aberto. Correspondências incertas devem permanecer incertas.
 
-## Usage-driven materialization: the architectural pivot
+## Materialização orientada pelo uso: o pivô arquitetural
 
-The first approach was **global BGP ingestion → attempted broad contextualization**. Ingesting the global reference proved much less costly than building and maintaining deep knowledge for every prefix, path and element. This is the project's engineering motivation, not a universal performance benchmark.
+A primeira abordagem foi **ingestão BGP global → tentativa de contextualização ampla**. Ingerir a referência global mostrou-se muito menos custoso que construir e manter conhecimento profundo de cada prefixo, caminho e elemento. Essa é a motivação de engenharia do projeto, não um benchmark universal de desempenho.
 
-The new approach is **traffic-driven working set → selective deep materialization**. Global routing data remains useful as reference, while observed destinations determine where deeper context is worth collecting and retaining.
+A nova abordagem é **working set definido pelo tráfego → materialização profunda seletiva**. Dados globais de roteamento continuam úteis como referência, enquanto destinos observados determinam onde vale coletar e reter contexto mais profundo.
 
-> RouteBrain does not need to deeply model the whole Internet. It needs to deeply model the part of the Internet that matters to the network using it.
+> O RouteBrain não precisa modelar profundamente toda a Internet. Ele precisa modelar profundamente a parte da Internet que importa para a rede que o utiliza.
 
-This direction does not claim a complete digital twin, perfect identification of private routers, automatic prediction of Internet behavior or global real-time monitoring. Its purpose is to make operator answers better grounded in the evidence actually collected.
+Essa direção não afirma digital twin completo, identificação perfeita de roteadores privados, previsão automática do comportamento da Internet ou monitoramento global em tempo real. Seu propósito é fundamentar melhor as respostas nas evidências efetivamente coletadas.

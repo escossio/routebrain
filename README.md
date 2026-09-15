@@ -1,112 +1,118 @@
+[Português (Brasil)](README.md) | [English](README.en.md)
+
 # RouteBrain
 
-**Demand-driven network intelligence and routing observability prototype.**
+**Protótipo de inteligência e observabilidade de redes orientadas pelo uso.**
 
-RouteBrain explores how to build operational knowledge of **the Internet relevant to a network, observed from that network**. Global routing data provides a reference layer; destinations actually used by the network define where deeper investigation is useful.
+O RouteBrain explora como transformar observações de rede em contexto e memória para que o operador investigue caminhos e mudanças ao longo do tempo. Seu foco é **a Internet relevante para uma rede, observada a partir dessa rede**: dados globais de roteamento fornecem a referência; os destinos realmente utilizados definem onde vale aprofundar a investigação.
 
-This is an experimental implementation and engineering archive, not a production-ready service. Source comments and some interfaces remain in Portuguese.
+O primeiro experimento processou mais de um milhão de registros BGP reais do RouteViews, demonstrando ingestão, persistência e reconstrução nessa escala.
 
-## The problem
+Este é um projeto experimental e um registro de engenharia, não um serviço pronto para produção. Comentários de código e algumas interfaces permanecem em português.
 
-Operators can observe current network state, but contextual and temporal questions are harder:
+## O problema
 
-- How was this destination reached before?
-- Which paths and elements have appeared in its observations?
-- What changed between two observations?
-- Which parts of the Internet matter to this network?
+Operadores conseguem observar o estado atual da rede, mas perguntas contextuais e temporais são mais difíceis:
 
-These questions motivate the architecture. They are not a claim that every question is already answered end to end.
+- Como esse destino era alcançado antes?
+- Quais caminhos e elementos apareceram nas observações desse destino?
+- O que mudou entre duas observações?
+- Quais partes da Internet importam para esta rede?
 
-## What RouteBrain is trying to answer
+Essas perguntas motivam a arquitetura. Não significam que todas já sejam respondidas end-to-end.
 
-RouteBrain aims to turn observations into context and memory: how a route was reached, where it passed, what changed, and which earlier operator actions were associated with those changes.
+## Que perguntas o RouteBrain pretende responder?
 
-- How was this destination reached a week ago?
-- What changed between two observations?
-- Have we seen this network element or path before?
-- Which parts of the Internet actually matter to this operator?
-- What historical evidence should an operator inspect before changing BGP policy or communities?
+O RouteBrain pretende transformar observações em contexto e memória: como uma rota era alcançada, por onde passou, o que mudou e quais ações anteriores do operador estiveram associadas a essas mudanças.
 
-These range from existing building blocks to architectural targets. See [docs/OPERATOR_QUESTIONS.md](docs/OPERATOR_QUESTIONS.md) for capability boundaries.
+- Como esse destino era alcançado uma semana atrás?
+- O que mudou entre duas observações?
+- Já vimos esse elemento de rede ou caminho antes?
+- Quais partes da Internet realmente importam para este operador?
+- Que evidências históricas o operador deve analisar antes de alterar uma política BGP ou communities?
 
-## The first approach
+Essas perguntas vão de componentes existentes a objetivos arquiteturais. Veja [docs/OPERATOR_QUESTIONS.md](docs/OPERATOR_QUESTIONS.md) para conhecer os limites de capacidade.
 
-The first experiment ingested a real global RouteViews RIB and processed more than one million BGP records. It demonstrated ingestion, persistence and reconstruction at that scale.
+## A primeira abordagem
 
-The engineering lesson was that **global ingestion and deep global semantic materialization are different scaling problems**. Contextualizing every prefix, path, hop and observation exceeded the practical scope of the available hardware. This is the project's architectural motivation, not a benchmark proving a universal hardware limit.
+O primeiro experimento ingeriu uma RIB global real do RouteViews e processou mais de um milhão de registros BGP. Demonstrou ingestão, persistência e reconstrução nessa escala.
 
-## The architectural pivot
+A lição de engenharia foi que **ingestão global e materialização semântica profunda global são problemas de escala diferentes**. Contextualizar cada prefixo, caminho, hop e observação excedeu o escopo prático do hardware disponível. Essa é a motivação arquitetural do projeto, não um benchmark que comprove um limite universal de hardware.
 
-**Demand-driven semantic materialization** selects a working set: destinations actually observed in operator traffic become candidates for deeper context, enrichment and measurements.
+## O pivô arquitetural
 
-The global RIB remains a reference. The intended deep materialization layer grows selectively around operator-relevant destinations, rather than attempting to understand the whole Internet equally.
+A **materialização semântica orientada pelo uso** seleciona um working set: destinos efetivamente observados no tráfego do operador tornam-se candidatos a contexto mais profundo, enriquecimento e medições.
 
-Code already exists for observed destinations, LPM, enrichment, baseline promotion, measurements and operational memory. Collection, enrichment, promotion and measurement remain separate operations with explicit controls. The full automatic traffic-to-graph-to-learning loop is **not complete**.
+A RIB global permanece como referência. A camada profunda pretendida cresce seletivamente ao redor dos destinos relevantes ao operador, em vez de tentar compreender toda a Internet com a mesma profundidade.
 
-## Implementation status
+Já existe código para observed destinations, LPM, enriquecimento, promoção de baseline, medições e memória operacional. Coleta, enriquecimento, promoção e medição continuam sendo operações separadas com controles explícitos. O ciclo automático completo de tráfego, grafo e aprendizado **não está concluído**.
 
-| Category | What is represented here |
+## Estado da implementação
+
+| Categoria | O que está representado aqui |
 |---|---|
-| **Implemented** | MRT parsing, PostgreSQL raw/current representation, LPM queries, observed-destination collection/persistence, enrichment interfaces, ping/traceroute parsing and storage, FastAPI and CLI interfaces |
-| **Experimental** | Destination baselines, contextual route reports, route memory and hop facts, graph exports/viewers, semantic documents and embeddings, assisted operator queries, browser laboratories, offline worker bootstrap |
-| **Architectural direction** | Automatic demand-driven materialization across the full pipeline, context-based entity resolution independent of IP, comprehensive temporal queries and generation-aware invalidation of derived knowledge |
+| **IMPLEMENTADO** | Parsing MRT, representação raw/current em PostgreSQL, consultas LPM, coleta/persistência de observed destinations, interfaces de enriquecimento, parsing e armazenamento de ping/traceroute, interfaces FastAPI e CLI |
+| **EXPERIMENTAL** | Baselines de destinos, relatórios contextuais de rotas, route memory e fatos de hops, exportação/visualização de grafos, documentos semânticos e embeddings, consultas assistidas ao operador, laboratórios de navegador e bootstrap com worker offline |
+| **DIREÇÃO ARQUITETURAL** | Materialização automática orientada pelo uso em todo o pipeline, entity resolution contextual independente de IP, consultas temporais abrangentes e invalidação de conhecimento derivado por geração |
 
-“Implemented” means code and historical execution evidence exist. It does not imply production readiness or integration-test coverage of every subsystem in this public export.
+“Implementado” significa que existem código e evidência histórica de execução. Não implica prontidão para produção nem cobertura de testes de integração de todos os subsistemas deste export público.
 
-## Contextual identity
+## Identidade contextual
 
-**An IP address is evidence, not necessarily an identity.** Private addresses may be reused; the same address can mean different things at different vantage points.
+**Um endereço IP é evidência, não necessariamente uma identidade.** Endereços privados podem ser reutilizados; o mesmo endereço pode ter significados diferentes em pontos de observação distintos.
 
-Context can include predecessor, successor, adjacency, ASN, vantage point, path, timestamp, recurrence and related observations. Existing route/segment matching and graph structures are steps toward that model. Complete entity resolution and durable contextual identities independent of individual addresses remain architectural work.
+O contexto pode incluir predecessor, sucessor, adjacência, ASN, vantage point, caminho, timestamp, recorrência e observações relacionadas. Correspondência de rotas/segmentos e estruturas de grafos existentes são passos nessa direção. Entity resolution completa e identidades contextuais duráveis, independentes de endereços individuais, continuam como trabalho arquitetural.
 
-## Temporal operational memory
+## Memória operacional temporal
 
-Persisted measurements, route observations, hop facts and graph snapshots provide a foundation for remembering what was observed. A traceroute is an observation from a particular origin, not a universal topology map. Historical persistence is implemented experimentally; arbitrary point-in-time reconstruction and comprehensive change diagnosis are not complete.
+Medições persistidas, observações de rotas, fatos de hops e snapshots de grafos fornecem uma base para lembrar o que foi observado. Um traceroute é uma observação a partir de uma origem específica, não um mapa universal da topologia. A persistência histórica está implementada experimentalmente; reconstrução em um instante arbitrário e diagnóstico abrangente de mudanças não estão concluídos.
 
-## Architecture
+## Arquitetura
 
 ```mermaid
 flowchart TD
-    R[Global routing data: reference layer] --> L[Prefix / longest-prefix match]
-    T[Network traffic] --> O[Observed destinations]
+    R[Dados globais de roteamento: camada de referência] --> L[Prefixo / Longest Prefix Match]
+    T[Tráfego da rede] --> O[Destinos observados]
     O --> L
-    L --> B[BGP context]
-    B --> E[Enrichment]
-    E -. Explicitly selected actions .-> A[Active observations: ping / traceroute]
-    A -. Experimental correlation .-> C[Contextual relationships]
-    C -. Evolving integration .-> M[Route memory / graph]
-    M -. Partial integration .-> S[Semantic retrieval / operator reasoning]
+    L --> B[Contexto BGP]
+    B --> E[Enriquecimento]
+    E -. Ações selecionadas explicitamente .-> A[Observações ativas: ping / traceroute]
+    A -. Correlação experimental .-> C[Relações contextuais]
+    C -. Integração em evolução .-> M[Route memory / grafo]
+    M -. Integração parcial .-> S[Recuperação semântica / raciocínio do operador]
 ```
 
-The diagram shows the intended composition. Dashed links are not a claim of a completed autonomous pipeline. **Global routing data = reference layer. Observed/operator-relevant Internet = deep materialization layer.**
+O diagrama mostra a composição pretendida. Ligações tracejadas não representam um pipeline autônomo concluído. **Dados globais de roteamento = camada de referência. Internet observada/relevante ao operador = camada de materialização profunda.**
 
-Python, FastAPI, PostgreSQL, RouteViews/MRT, LPM, active measurements, enrichment, route memory, graphs, semantic retrieval, Grafana and CLI form the existing component set. See [ARCHITECTURE.md](ARCHITECTURE.md) for code pointers and boundaries.
+Python, FastAPI, PostgreSQL, RouteViews/MRT, LPM, medições ativas, enriquecimento, route memory, grafos, recuperação semântica, Grafana e CLI formam o conjunto de componentes existentes. Veja [ARCHITECTURE.md](ARCHITECTURE.md) para referências ao código e fronteiras.
 
-## Engineering case study: the CIDR incident
+## Caso de engenharia: o incidente CIDR
 
-An early parser projection retained the network address but lost its prefix length. PostgreSQL received bare IPv4 addresses and represented them as `/32`. Preserved `raw_record` data made recovery possible.
+Uma projeção inicial do parser preservava o endereço de rede, mas perdia o comprimento do prefixo. O PostgreSQL recebia endereços IPv4 isolados e os representava como `/32`. Os dados preservados em `raw_record` permitiram a recuperação.
 
-A read-only audit on 2026-09-15 verified the recovered private dataset:
+Uma auditoria somente de leitura, realizada em 2026-09-15, verificou o dataset privado recuperado:
 
-| Evidence | Count |
+| Evidência | Quantidade |
 |---|---:|
-| Raw records | 1,061,466 |
-| Current route rows | 1,061,196 |
-| Distinct current prefixes | 1,061,192 |
-| Legitimate `/32` rows in each recovered table | 84 |
-| Raw CIDR mismatches against original prefix + length | 0 |
+| Registros raw | 1.061.466 |
+| Rotas correntes | 1.061.196 |
+| Prefixos correntes distintos | 1.061.192 |
+| Registros `/32` legítimos em cada tabela recuperada | 84 |
+| Divergências de CIDR raw contra prefixo + comprimento original | 0 |
 
-These are historical audit measurements, **not data included in this repository or a benchmark reproduced by the public tests**. The normalized parser selects the first RIB entry; the figures do not imply all alternatives from every peer are materialized.
+Essas são medições históricas de auditoria, **não dados incluídos no repositório nem um benchmark reproduzido pelos testes públicos**. O parser normalizado seleciona a primeira entrada da RIB; os números não significam que todas as alternativas de todos os peers foram materializadas.
 
-The old change table contains bootstrap materialization and false comparisons caused by prefix collisions. **It does not demonstrate more than one million observed BGP changes.** Derived summaries, caches and semantic context also require reconciliation. The public code preserves that experimental debt; this export did not repair the operational system. Read the [sanitized postmortem](docs/CIDR32_POSTMORTEM.md).
+A tabela antiga de mudanças contém materialização inicial e comparações falsas causadas por colisões de prefixos. **Ela não demonstra mais de um milhão de mudanças BGP observadas.** Resumos, caches e contexto semântico derivados também exigem reconciliação. O código público preserva essa dívida experimental; este export não reparou o ambiente operacional. Leia o [postmortem sanitizado](docs/CIDR32_POSTMORTEM.md).
 
-## Explore safely
+## Explorar com segurança
 
-**Public release validation.** The isolated public suite reports **79 passed / 0 failed**, with syntax, API import and operational-reference checks passing. Seven preexisting offline-fixture failures remain in the original source baseline; their public counterparts already have isolated fixtures. See [VALIDATION.md](docs/VALIDATION.md) for the independence evidence, bounded patches and integration-test limitations.
+**PT-BR é o idioma canônico da documentação principal.** [README.en.md](README.en.md) é a tradução secundária integral em inglês. Arquitetura, perguntas operacionais, história de engenharia, postmortem CIDR e roadmap estão atualmente disponíveis em português. Os relatórios de validação e limites do export público permanecem em inglês.
 
-Start with the [architecture](ARCHITECTURE.md), [engineering history](docs/ENGINEERING_HISTORY.md), [roadmap](docs/ROADMAP.md) and [public export boundaries](docs/PUBLIC_EXPORT.md).
+**Validação da versão pública.** A suíte pública isolada registra **79 testes aprovados / zero falhas**, com sintaxe, importação da API e verificações de referências operacionais aprovadas. Sete falhas preexistentes de fixtures offline permanecem no baseline do source original; suas contrapartes públicas já possuem fixtures isoladas. Veja [VALIDATION.md, em inglês](docs/VALIDATION.md) para a evidência de independência, correções delimitadas e limites dos testes de integração.
 
-For an offline code demonstration, use a fresh local environment:
+Comece pela [arquitetura](ARCHITECTURE.md), [história de engenharia](docs/ENGINEERING_HISTORY.md), [roadmap](docs/ROADMAP.md) e [limites do export público, em inglês](docs/PUBLIC_EXPORT.md).
+
+Para uma demonstração offline do código, prepare um ambiente local novo:
 
 ```sh
 python -m venv .venv
@@ -115,12 +121,12 @@ python -m pip install -r requirements.txt -r requirements-dev.txt
 python scripts/offline_check.py
 ```
 
-Dependency installation needs package access; the check itself denies network connections, subprocess execution and database connections. It syntax-checks Python, imports the API without starting it, and runs isolated unit/contract tests with fake persistence where needed. It does not ingest data, migrate a database, issue measurements, call an LLM or load model weights.
+A instalação das dependências precisa de acesso aos pacotes; o check bloqueia conexões de rede, execução de subprocessos e conexões de banco. Ele verifica a sintaxe Python, importa a API sem iniciá-la e executa testes isolados de unidade/contrato com persistência simulada quando necessário. Não ingere dados, migra banco, realiza medições, chama LLM ou carrega pesos de modelos.
 
-Database schemas under `sql/` are historical building blocks, **not a validated one-command migration sequence**. The API includes write-capable operator actions and is not entirely read-only. Do not expose it publicly or run ingestion/measurement scripts against an existing deployment without reviewing their behavior and configuring an isolated database.
+Os schemas em `sql/` são blocos históricos, **não uma sequência de migração validada para execução com um único comando**. A API inclui ações de escrita do operador e não é inteiramente somente de leitura. Não a exponha publicamente nem execute scripts de ingestão/medição contra um deployment existente sem revisar o comportamento e configurar um banco isolado.
 
-No operational `.env`, credentials, datasets, HARs, database dumps, deployment secrets or original Git history are included. No `.env.example` was copied. Required configuration names and optional dependencies are documented in [PUBLIC_EXPORT.md](docs/PUBLIC_EXPORT.md).
+Não são incluídos `.env` operacional, credenciais, datasets, HARs, dumps de banco, segredos de deployment ou histórico Git original. Nenhum `.env.example` foi copiado. Nomes de configuração obrigatórios e dependências opcionais estão documentados em [PUBLIC_EXPORT.md, em inglês](docs/PUBLIC_EXPORT.md).
 
-## License
+## Licença
 
-**LICENSE_DECISION=PENDING.** No project license has been selected for this first public version. Dependency licenses do not license RouteBrain itself. Third-party datasets, model weights and externally loaded visualization libraries have their own terms.
+**LICENSE_DECISION=PENDING.** Nenhuma licença de projeto foi escolhida para esta primeira versão pública. Licenças de dependências não licenciam o RouteBrain. Datasets de terceiros, pesos de modelos e bibliotecas de visualização carregadas externamente têm seus próprios termos.

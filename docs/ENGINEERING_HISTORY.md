@@ -1,31 +1,31 @@
-# Engineering history
+# História de engenharia
 
-## 1. Global ingestion
+## 1. Ingestão global
 
-The initial experiment used a real RouteViews RIB. The pipeline processed over one million normalized records and explored PostgreSQL raw/current storage, incremental processing, chunked bootstrap and offline worker assistance.
+O primeiro experimento usou uma RIB real do RouteViews. O pipeline processou mais de um milhão de registros normalizados e explorou armazenamento raw/current em PostgreSQL, processamento incremental, bootstrap em chunks e apoio de worker offline.
 
-This established that ingestion could work at that scale. It did not establish that every prefix could be enriched into a deep, continuously maintained semantic model on the available hardware.
+Isso demonstrou ingestão nessa escala. Não demonstrou que cada prefixo poderia ser enriquecido em um modelo semântico profundo e continuamente mantido no hardware disponível.
 
-## 2. Scope became an architectural constraint
+## 2. O escopo virou uma restrição arquitetural
 
-The project owner's recovered architectural account identifies the practical cost of global contextualization as the motivation for the pivot. Ingestion throughput and the cost of maintaining identities, histories, observations and semantic documents are different concerns. No universal scaling benchmark or precise hardware threshold is claimed.
+O relato arquitetural recuperado do responsável pelo projeto identifica o custo prático da contextualização global como motivação do pivô. Vazão de ingestão e custo de manter identidades, históricos, observações e documentos semânticos são problemas diferentes. Não se afirma um benchmark universal de escala ou um limite preciso de hardware.
 
-## 3. Selective materialization
+## 3. Materialização seletiva
 
-Observed traffic supplies an operational working set. A destination becomes a candidate for LPM, ASN context, enrichment and, when warranted, an active observation. Baseline promotion and measurements remain explicit operations.
+O tráfego observado fornece um working set operacional. Um destino se torna candidato a LPM, contexto de ASN, enriquecimento e, quando necessário, observação ativa. Promoção de baseline e medições continuam sendo operações explícitas.
 
-Code for observed destinations and their associated runs, enrichment and baselines demonstrates this direction. It does not prove an autonomous end-to-end loop or production deployment.
+O código de observed destinations, com suas execuções, enriquecimento e baselines, demonstra partes dessa direção. Não comprova um ciclo autônomo end-to-end nem um deployment de produção.
 
-## 4. Contextual and temporal memory
+## 4. Memória contextual e temporal
 
-Route observations, hop facts, segment matching and graph snapshots expand the unit of knowledge from an IP address to an observation with context. The intended result is the Internet relevant to an operator, seen from that operator's vantage point.
+Observações de rotas, fatos de hops, correspondência de segmentos e snapshots de grafos ampliam a unidade de conhecimento: do IP isolado para a observação com contexto. O resultado pretendido é a Internet relevante para o operador, vista de seu ponto de observação.
 
-Temporal persistence exists experimentally. Complete contextual entity resolution and general historical question answering remain open architecture work.
+A persistência temporal existe experimentalmente. Entity resolution contextual completa e respostas históricas gerais continuam como trabalho arquitetural.
 
-## 5. Recovery as an engineering lesson
+## 5. Recuperação como lição de engenharia
 
-An early projection lost CIDR lengths. Preserving source JSON made reconstruction possible without inventing network masks. The main tables were corrected, while downstream events, summaries and caches remained inconsistent. The [postmortem](CIDR32_POSTMORTEM.md) documents this boundary honestly.
+Uma projeção inicial perdeu os comprimentos CIDR. Preservar o JSON de origem permitiu reconstruí-los sem inventar máscaras de rede. As tabelas principais foram corrigidas; eventos, resumos e caches derivados permaneceram inconsistentes. O [postmortem](CIDR32_POSTMORTEM.md) documenta essa fronteira.
 
-## Public release boundary
+## Fronteira da publicação
 
-This repository begins with a new public history. The private development Git and operational records are not imported. Publication sanitizes examples and removes private deployment material; it does not retroactively repair or rewrite the operational experiment.
+Este repositório começou com um histórico público novo. O Git privado de desenvolvimento e registros operacionais não foram importados. A publicação sanitizou exemplos e removeu material de deployment privado; ela não reparou nem reescreveu retroativamente o experimento operacional.

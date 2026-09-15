@@ -1,50 +1,50 @@
-# CIDR /32 incident: preserving evidence enabled recovery
+# Incidente CIDR /32: preservar evidências permitiu recuperar os dados
 
-## Failure
+## Falha
 
-The decoded MRT record carried a network address and its length separately. The early parser projected only the address into the normalized `prefix` column. The importer passed that string to PostgreSQL's `cidr` type, which interpreted a bare IPv4 address as a host `/32`.
+O registro MRT decodificado trazia o endereço de rede e seu comprimento separadamente. O parser inicial projetava apenas o endereço na coluna normalizada `prefix`. O importador passava essa string ao tipo `cidr` do PostgreSQL, que interpretava um endereço IPv4 isolado como host `/32`.
 
-Different networks sharing the same base address then collided under the current-route key. Attribute differences between those different prefixes appeared as route changes.
+Redes diferentes com o mesmo endereço base passaram a colidir na chave de rota corrente. Diferenças de atributos entre esses prefixos distintos apareciam como mudanças de rota.
 
-## Recovery
+## Recuperação
 
-The original JSONB `raw_record` retained `prefix` and `length`. Their combination allowed a controlled reconstruction of the CIDR column. The historical process used isolated rebuild tables, validation and a promotion designed to preserve dependent views.
+O JSONB original em `raw_record` preservava `prefix` e `length`. A combinação permitiu reconstruir a coluna CIDR de forma controlada. O processo histórico usou tabelas isoladas de reconstrução, validação e promoção planejada para preservar views dependentes.
 
-The read-only audit performed on 2026-09-15 verified:
+A auditoria somente de leitura, realizada em 2026-09-15, verificou:
 
-| Table | Before: rows | After: rows | Before: /32 rows | After: /32 rows |
+| Tabela | Antes: registros | Depois: registros | Antes: registros /32 | Depois: registros /32 |
 |---|---:|---:|---:|---:|
-| raw | 1,061,466 | 1,061,466 | 1,061,466 | 84 |
-| current | 1,041,877 | 1,061,196 | 1,041,877 | 84 |
+| raw | 1.061.466 | 1.061.466 | 1.061.466 | 84 |
+| current | 1.041.877 | 1.061.196 | 1.041.877 | 84 |
 
-Current has approximately 1,061,192 distinct prefixes. The complete raw-table comparison against preserved prefix + length found **zero mismatches**. The remaining 84 `/32` rows are legitimate in that dataset; deleting all `/32` records would be another error.
+A current possui aproximadamente 1.061.192 prefixos distintos. A comparação completa de raw com o prefixo + comprimento preservados encontrou **zero divergências**. Os 84 registros `/32` restantes são legítimos nesse dataset; excluir todos os `/32` seria outro erro.
 
-These private-dataset measurements are published as aggregate historical evidence. The dataset and private audit files are not distributed here.
+Essas medições do dataset privado são publicadas como evidência histórica agregada. O dataset e os arquivos privados de auditoria não são distribuídos aqui.
 
-## What was not recovered end to end
+## O que não foi recuperado end-to-end
 
-The historical `bgp_route_changes` table still contains 1,052,202 records:
+Na auditoria, a tabela histórica `bgp_route_changes` ainda continha 1.052.202 registros:
 
-- 1,040,932 `NEW_ROUTE` records mean initial materialization of absent keys.
-- 10,972 `AS_PATH_CHANGED` and 298 `ORIGIN_TYPE_CHANGED` comparisons involved the same base address and MRT timestamp but different masks.
+- 1.040.932 registros `NEW_ROUTE` representavam materialização inicial de chaves ausentes.
+- 10.972 comparações `AS_PATH_CHANGED` e 298 `ORIGIN_TYPE_CHANGED` envolviam o mesmo endereço base e timestamp MRT, mas máscaras diferentes.
 
-They do **not** prove a million temporal BGP changes. Replacing only the prefix field in those events would not make the original comparisons valid.
+Isso **não comprova um milhão de mudanças BGP temporais reais**. Substituir apenas o prefixo desses eventos não tornaria válidas as comparações originais.
 
-The audit also found stale current summaries, contaminated changes summaries, old BGP evidence/caches, ASN snapshots and semantic documents derived from previous counts. Some BGP caches did not expire. Correcting a reference table is not equivalent to reconciling every derived representation.
+A auditoria também encontrou resumos de current desatualizados, resumos de mudanças contaminados, evidências/caches BGP antigos, snapshots de ASN e documentos semânticos derivados das contagens anteriores. Alguns caches BGP não expiravam. Corrigir uma tabela de referência não equivale a reconciliar todas as representações derivadas.
 
-## Remaining code debt
+## Dívida de código remanescente
 
-The current normalizer validates prefix length, but parser callers can fall back to a bare address on a normalization error. Writers and staging inputs still require an end-to-end validation policy. The public export does not claim this incident has been fully repaired.
+O normalizador atual valida o comprimento do prefixo, mas seus chamadores no parser podem retornar ao endereço sem máscara quando ocorre erro de normalização. Escritores e entradas de staging ainda precisam de uma política de validação end-to-end. O export público não afirma reparação completa do incidente.
 
-The operational rebuild script and private promotion/rollback artifacts are deliberately not included as a ready-to-run public repair tool. Historical schema files and event processors remain experimental and must not be blindly replayed.
+O script operacional de reconstrução e os artefatos privados de promoção/rollback não foram incluídos como ferramenta pública pronta para reparo. Schemas históricos e processadores de eventos continuam experimentais e não devem ser executados cegamente.
 
-## Lessons and future work
+## Lições e próximos trabalhos
 
-1. Preserve source records alongside normalized projections.
-2. Treat a prefix as address **and** length at every boundary.
-3. Distinguish a baseline import from a temporal event.
-4. Version datasets and their derivatives; TTL alone cannot represent semantic validity.
-5. Keep invalid historical evidence traceable without presenting it as current operational truth.
-6. Rebuild derived stores in dependency order and validate consumers before promotion.
+1. Preservar registros de origem junto às projeções normalizadas.
+2. Tratar prefixo como endereço **e** comprimento em todas as fronteiras.
+3. Distinguir importação de baseline de evento temporal.
+4. Versionar datasets e derivados; TTL sozinho não representa validade semântica.
+5. Manter evidência histórica inválida rastreável, sem apresentá-la como verdade operacional atual.
+6. Reconstruir derivados na ordem de dependência e validar consumidores antes da promoção.
 
-Future remediation belongs in an isolated, reversible workflow. No remediation of the private deployment was performed to create this release.
+Uma futura correção deve ocorrer em fluxo isolado e reversível. Nenhuma correção do deployment privado foi feita para criar esta publicação.

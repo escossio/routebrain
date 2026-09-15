@@ -26,3 +26,14 @@
 - Validation: existing offline_check completed with 79 passed, 0 failed, 0 skipped; syntax and API import PASS. Execution used a disposable public-tree environment, an empty inherited environment and an isolated network namespace.
 - Markdown links, secret scan and operational-reference scan PASS across 218 public files; zero detected real secrets and no new operational literals. Full documentation diff reviewed before commit/push.
 - Publication target: main of the existing public repository. Commit and remote verification are reported in the session result.
+
+
+## Internacionalização da documentação principal
+
+- PT-BR passa a ser o idioma canônico; README.en.md oferece a tradução secundária integral, com navegação entre idiomas nos dois READMEs.
+- README, arquitetura, perguntas operacionais, história de engenharia, postmortem CIDR e roadmap traduzidos a partir da versão publicada em 7f477e6. Perguntas, semântica, claims e números auditados preservados.
+- Escopo restrito à documentação; código, testes, source original, banco e arquitetura implementada sem alterações.
+- Validação final: offline_check com 79 aprovados, zero falhas e zero skips; sintaxe e importação da API PASS, em ambiente descartável com namespace de rede isolado.
+- Links Markdown, secret scan e operational-reference scan PASS em 219 arquivos públicos. Zero secrets detectados e nenhuma nova referência operacional.
+- Revisão de equivalência: números auditados, comandos e caminhos de código preservados; grupos de perguntas mantêm 8/8/6 itens. Diff restrito aos sete documentos de idioma e a este STATUS.
+- Commit e verificação remota serão registrados no resultado da sessão; LICENSE_DECISION=PENDING.

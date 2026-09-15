@@ -1,63 +1,63 @@
-# Architecture
+# Arquitetura
 
-## Two layers with different costs
+## Duas camadas com custos diferentes
 
-The **reference layer** ingests global BGP data and supports queries by prefix, ASN and peer. The **deep materialization layer** is intended to focus on an operator's working set: destinations observed in traffic and selected for further investigation.
+A **camada de referência** ingere dados BGP globais e permite consultas por prefixo, ASN e peer. A **camada de materialização profunda** pretende concentrar-se no working set do operador: destinos observados no tráfego e selecionados para investigação adicional.
 
-The pivot concerns the scope of semantic work, not a claim that global BGP ingestion is impossible. A million-record RIB can be ingested without building complete contextual histories for every route and every network element.
+O pivô diz respeito ao escopo do trabalho semântico. Uma RIB com um milhão de registros pode ser ingerida sem construir históricos contextuais completos para cada rota e elemento de rede.
 
-## From observations to operator questions
+## Das observações às perguntas do operador
 
-Demand-driven materialization selects what deserves deeper investigation; contextual identity relates observations without treating an address as definitive identity; temporal memory preserves when and where evidence was observed. Together, these are intended to support questions about prior paths, recurring elements, changes and the evidence relevant to an operator's next action.
+A materialização orientada pelo uso seleciona o que merece investigação; a identidade contextual pretende relacionar observações sem tratar o endereço como identidade definitiva; a memória temporal preserva quando e de onde a evidência foi observada. Juntas, essas bases devem permitir perguntas sobre caminhos anteriores, elementos recorrentes, mudanças e evidências relevantes à próxima ação do operador.
 
-Implemented building blocks and experimental memory supply parts of these answers. Historical comparisons require accumulated, comparable observations. Cross-context identity resolution and policy/action reasoning remain architectural direction; before/after correlation alone does not establish causality. See [Questions RouteBrain Is Designed to Answer](docs/OPERATOR_QUESTIONS.md) for the questions and their evidence requirements.
+Componentes implementados e memória experimental fornecem partes dessas respostas. Comparações históricas exigem observações acumuladas e comparáveis. Entity resolution entre contextos e raciocínio sobre políticas/ações permanecem como direção arquitetural; correlação antes/depois não estabelece causalidade. Veja [Perguntas que o RouteBrain pretende responder](docs/OPERATOR_QUESTIONS.md).
 
-## Components and boundaries
+## Componentes e fronteiras
 
-| Component | Source | State / responsibility |
+| Componente | Código | Estado / responsabilidade |
 |---|---|---|
-| MRT projection | `app/parsers/routeviews_mrt_parser.py` | Implemented; normalizes prefix/length and selects the first RIB entry |
-| CIDR normalization | `app/services/bgp_prefix_normalizer.py` | Implemented helper; caller fallback on invalid input remains debt |
-| Raw/current persistence | `app/services/bgp_raw_ingest.py`, `bgp_current_builder.py` | Implemented; PostgreSQL CIDR/INET/JSONB |
-| BGP queries | `app/services/bgp_operational_queries.py` | LPM, prefix/ASN/peer context; some paths prefer persisted summaries |
-| Traffic-derived candidates | `app/services/mikrotik_observer.py`, `observed_destinations.py` | Connection-tracking destinations, runs and enrichment; actual device configuration must be supplied |
-| Baselines | `app/services/observed_destinations.py` | Explicit promotion/refresh and suggested actions; not automatic promotion of every destination |
-| Active observations | Services under `app/services/` and measurement scripts | Ping/traceroute persistence and parsing; requires deliberate execution |
-| Enrichment | `app/services/external_enrichment.py` | RDAP/PeeringDB and cache-backed context; external attribution is distinct from BGP confirmation |
-| Route memory | `app/services/route_memory.py`, `route_memory_persistence.py` | Experimental observations, segment matching, hop facts and graph snapshots |
-| Graph contracts | `app/services/route_graph_builder.py`, `app/adapters/` | Reports and adapters; observed path adjacency is not proof of physical adjacency |
-| Semantic retrieval | `app/services/semantic_memory.py`, `embedding_provider.py` | Documents, embeddings and hybrid retrieval; model training is not implemented here |
-| Operator interfaces | `app/api/`, `app/cli.py`, `app/static/` | FastAPI, CLI and experimental browser views; both query and action interfaces |
-| Visualization | `deploy/grafana/dashboards/`, `grafana/` | Dashboard/query definitions; no real datasource configuration |
-| Bootstrap worker | `scripts/bootstrap_parse_bgp_snapshot.py`, `bootstrap_worker_utils.py` | Offline chunk artifacts and manifests; no HA cluster or distributed scheduler claim |
+| Projeção MRT | `app/parsers/routeviews_mrt_parser.py` | Implementado; normaliza prefixo/comprimento e seleciona a primeira entrada da RIB |
+| Normalização CIDR | `app/services/bgp_prefix_normalizer.py` | Helper implementado; fallback dos chamadores em entradas inválidas continua como dívida |
+| Persistência raw/current | `app/services/bgp_raw_ingest.py`, `bgp_current_builder.py` | Implementado; PostgreSQL CIDR/INET/JSONB |
+| Consultas BGP | `app/services/bgp_operational_queries.py` | LPM e contexto de prefixo/ASN/peer; alguns fluxos preferem resumos persistidos |
+| Candidatos derivados do tráfego | `app/services/mikrotik_observer.py`, `observed_destinations.py` | Destinos do connection tracking, execuções e enriquecimento; a configuração do dispositivo deve ser fornecida |
+| Baselines | `app/services/observed_destinations.py` | Promoção/atualização explícitas e ações sugeridas; não promove automaticamente todos os destinos |
+| Observações ativas | Serviços em `app/services/` e scripts de medição | Parsing e persistência de ping/traceroute; exigem execução deliberada |
+| Enriquecimento | `app/services/external_enrichment.py` | RDAP/PeeringDB e contexto com cache; atribuição externa é distinta de confirmação BGP |
+| Route memory | `app/services/route_memory.py`, `route_memory_persistence.py` | Observações, correspondência de segmentos, fatos de hops e snapshots de grafos experimentais |
+| Contratos de grafos | `app/services/route_graph_builder.py`, `app/adapters/` | Relatórios e adaptadores; adjacência em caminho observado não prova adjacência física |
+| Recuperação semântica | `app/services/semantic_memory.py`, `embedding_provider.py` | Documentos, embeddings e recuperação híbrida experimentais; não há treinamento de modelo implementado aqui |
+| Interfaces do operador | `app/api/`, `app/cli.py`, `app/static/` | FastAPI, CLI e visualizações experimentais no navegador; incluem consultas e ações |
+| Visualização | `deploy/grafana/dashboards/`, `grafana/` | Definições de dashboards/consultas; sem configuração real de datasource |
+| Worker de bootstrap | `scripts/bootstrap_parse_bgp_snapshot.py`, `bootstrap_worker_utils.py` | Artefatos de parsing offline em chunks e manifestos; não implica cluster HA ou scheduler distribuído |
 
-## Existing flow versus intended composition
+## Fluxo existente e composição pretendida
 
-Observed destinations have dedicated collection, enrichment, baseline and suggested-action operations. Promotion requires confirmation. Measurements have their own execution paths. Route memory and semantic retrieval have separate builders/persistence. They demonstrate parts of demand-driven materialization, but no verified single controller closes the entire loop automatically.
+Observed destinations possui operações próprias de coleta, enriquecimento, baseline e sugestão de ações. A promoção exige confirmação. Medições possuem fluxos separados. Route memory e recuperação semântica têm builders/persistência próprios. São partes da materialização orientada pelo uso; não existe um controlador único validado que feche automaticamente todo o ciclo.
 
-The public tree does not include historical operator-specific active-target lists, deployment configs or complete original lab outputs. See the export inventory and boundaries document.
+O export público não inclui listas históricas de alvos do operador, configurações de deployment ou resultados completos dos laboratórios originais. Veja os [limites do export, em inglês](docs/PUBLIC_EXPORT.md).
 
-## Contextual identity
+## Identidade contextual
 
-The intended entity model combines address evidence with vantage point, predecessor/successor, path position, ASN, recurrence and observation time. Segment fingerprints and matching provide an experimental foundation. IP-independent entity resolution, merge/split policy and temporal identity reconciliation are not complete.
+O modelo pretendido combina endereço com vantage point, predecessor/sucessor, posição no caminho, ASN, recorrência e momento da observação. Fingerprints e correspondência de segmentos oferecem uma base experimental. Entity resolution independente de IP, regras de merge/split e reconciliação temporal de identidade não estão concluídas.
 
-Private/CGNAT nodes should not receive a public ASN merely because a nearby public hop has one. A hop can have contextual association without direct BGP attribution. Silent hops are observations of missing responses, not identified devices.
+Nós privados/CGNAT não devem receber ASN público apenas porque um hop público próximo possui um. Um hop pode ter associação contextual sem atribuição BGP direta. Hops silenciosos registram ausência de resposta, não dispositivos identificados.
 
-The graph exporter now validates a present hop IP before exposing a direct ASN or generating an AS-number label. Invalid/non-global addresses lose direct attribution even if a preferred fact is tagged public. Raw evidence, contextual segment ASN and existing snapshots remain unchanged; absent-IP behavior is preserved. This bounded fix is not complete entity resolution or independent BGP verification. See [validation findings](docs/VALIDATION.md).
+O exportador de grafos valida um IP de hop presente antes de expor ASN direto ou gerar rótulo AS. Endereços inválidos/não globais perdem a atribuição direta mesmo se o fato preferido estiver marcado como público. Evidência bruta, ASN contextual de segmento e snapshots existentes permanecem intactos; o comportamento sem IP é preservado. Essa correção limitada não é entity resolution completa nem verificação BGP independente. Veja a [validação, em inglês](docs/VALIDATION.md).
 
-## Time and provenance
+## Tempo e proveniência
 
-Distinguish MRT record time, ingestion time, active measurement time and knowledge materialization time. Recomputing context from a corrected RIB must not be represented as a new network measurement.
+É necessário distinguir o momento do registro MRT, da ingestão, da medição ativa e da materialização do conhecimento. Recalcular contexto a partir de uma RIB corrigida não equivale a uma nova medição de rede.
 
-The archived dataset primarily represents one RIB. A sequence of ingestion batches is not a time series of routing updates. The historical change table lacks sufficient event provenance and has invalid comparisons; its code is included as experimental legacy, not a trusted incident stream.
+O dataset histórico representa principalmente uma RIB. Uma sequência de lotes de ingestão não é uma série temporal de atualizações de roteamento. A tabela histórica de mudanças tem proveniência insuficiente e comparações inválidas; seu código é legado experimental, não um fluxo confiável de incidentes.
 
-## Engineering controls and limits
+## Controles de engenharia e limites
 
-- PostgreSQL advisory locks and a raw-ID cursor exist in pipeline scripts. Lock names differ across workflows; they are not global exclusion by default.
-- Staging and manifests separate offline parsing from server-side persistence.
-- Raw records preserve recovery evidence; normalization must not destroy source information.
-- Deduplication exists at selected stages, not as a universal exactly-once guarantee.
-- Semantic document hashes avoid some unnecessary re-embedding, but generation-aware invalidation across all derived stores remains work.
-- Some historical BGP caches have no expiration. A corrected reference table does not automatically correct derived knowledge.
+- Scripts do pipeline usam advisory locks do PostgreSQL e cursor por ID raw. Os nomes dos locks variam entre fluxos; não garantem exclusão global por padrão.
+- Staging e manifestos separam parsing offline de persistência no servidor.
+- Registros raw preservam evidências de recuperação; normalizar não deve destruir a informação de origem.
+- Há deduplicação em etapas selecionadas, sem garantia universal de exactly-once.
+- Hashes de documentos semânticos evitam parte do reprocessamento de embeddings; invalidação por geração em todos os derivados ainda é trabalho aberto.
+- Alguns caches BGP históricos não expiram. Corrigir a referência não corrige automaticamente o conhecimento derivado.
 
-No complete Internet model, real-time BGP monitor, production SLA or high-availability architecture is claimed.
+Não se afirma modelo completo da Internet, monitoramento BGP global em tempo real, SLA de produção ou arquitetura de alta disponibilidade.

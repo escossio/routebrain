@@ -72,18 +72,7 @@ Medições persistidas, observações de rotas, fatos de hops e snapshots de gra
 
 ## Arquitetura
 
-```mermaid
-flowchart TD
-    R[Dados globais de roteamento: camada de referência] --> L[Prefixo / Longest Prefix Match]
-    T[Tráfego da rede] --> O[Destinos observados]
-    O --> L
-    L --> B[Contexto BGP]
-    B --> E[Enriquecimento]
-    E -. Ações selecionadas explicitamente .-> A[Observações ativas: ping / traceroute]
-    A -. Correlação experimental .-> C[Relações contextuais]
-    C -. Integração em evolução .-> M[Route memory / grafo]
-    M -. Integração parcial .-> S[Recuperação semântica / raciocínio do operador]
-```
+![Arquitetura do RouteBrain: do tráfego observado à memória contextual e ao raciocínio do operador](docs/images/routebrain-architecture.png)
 
 O diagrama mostra a composição pretendida. Ligações tracejadas não representam um pipeline autônomo concluído. **Dados globais de roteamento = camada de referência. Internet observada/relevante ao operador = camada de materialização profunda.**
 

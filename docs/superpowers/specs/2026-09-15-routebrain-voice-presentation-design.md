@@ -34,7 +34,7 @@ Fonte versionada no próprio repositório:
 
 - `site/index.html` — estrutura semântica e conteúdo.
 - `site/styles.css` — layout responsivo/dark, modal e estados.
-- `site/app.js` — controle do modal, áudio, progresso e fallback.
+- `site/app.js` — controle do modal, áudio e progresso.
 - `site/assets/routebrain-architecture.png` — diagrama visual.
 - `site/assets/routebrain-intro.mp3` — narração principal.
 
@@ -42,9 +42,11 @@ A página será publicada por GitHub Pages usando workflow próprio baseado nas 
 
 ## Áudio
 
-O caminho principal é um MP3 pré-gerado e versionado como asset estático. Isso garante voz consistente, funciona sem expor credenciais e evita dependência de TTS em tempo real.
+A voz oficial da apresentação será a voz **Zagan** da xAI, usando `voice_id: zagan`, sintetizada em **pt-BR** pelo endpoint TTS da xAI antes da publicação. A xAI descreve essa voz como poderosa, dramática e adequada para narração, alinhada ao objetivo de causar impacto sem perder clareza técnica.
 
-Fallback: caso o MP3 não carregue, `speechSynthesis` pode narrar o texto em PT-BR quando disponível. Se nem isso estiver disponível, a opção sem áudio permanece funcional.
+O áudio será gerado previamente e versionado como `site/assets/routebrain-intro.mp3`. A página pública **não** chamará a API da xAI em tempo real e **não** conterá chave de API, token ou credencial.
+
+Para manter identidade sonora consistente, não haverá fallback para outra voz sintética do navegador. Se o MP3 não carregar, a página informará a indisponibilidade do áudio e permitirá **Continuar sem áudio** normalmente.
 
 A página deve oferecer controles mínimos após o início: reproduzir/pausar, reiniciar e ativar/desativar áudio.
 
@@ -80,9 +82,9 @@ O README PT-BR terá o CTA acima da explicação longa do projeto. `README.en.md
 
 1. README abre a apresentação com um toque.
 2. O modal exige gesto do usuário antes do áudio.
-3. “Ouvir” inicia a narração e libera a apresentação.
+3. “Ouvir” inicia a narração Zagan/xAI e libera a apresentação.
 4. “Continuar sem áudio” libera tudo sem erro.
-5. MP3 é o caminho preferencial; fallback não quebra a página.
+5. O MP3 Zagan/xAI é o único caminho de voz da V1; falha de áudio não quebra a página.
 6. O diagrama novo é exibido de forma responsiva.
 7. Nenhuma credencial ou dependência operacional é introduzida.
 8. Todos os required checks do RouteBrain passam no PR.

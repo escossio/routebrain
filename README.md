@@ -17,6 +17,18 @@ Operators can observe current network state, but contextual and temporal questio
 
 These questions motivate the architecture. They are not a claim that every question is already answered end to end.
 
+## What RouteBrain is trying to answer
+
+RouteBrain aims to turn observations into context and memory: how a route was reached, where it passed, what changed, and which earlier operator actions were associated with those changes.
+
+- How was this destination reached a week ago?
+- What changed between two observations?
+- Have we seen this network element or path before?
+- Which parts of the Internet actually matter to this operator?
+- What historical evidence should an operator inspect before changing BGP policy or communities?
+
+These range from existing building blocks to architectural targets. See [docs/OPERATOR_QUESTIONS.md](docs/OPERATOR_QUESTIONS.md) for capability boundaries.
+
 ## The first approach
 
 The first experiment ingested a real global RouteViews RIB and processed more than one million BGP records. It demonstrated ingestion, persistence and reconstruction at that scale.

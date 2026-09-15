@@ -6,6 +6,12 @@ The **reference layer** ingests global BGP data and supports queries by prefix, 
 
 The pivot concerns the scope of semantic work, not a claim that global BGP ingestion is impossible. A million-record RIB can be ingested without building complete contextual histories for every route and every network element.
 
+## From observations to operator questions
+
+Demand-driven materialization selects what deserves deeper investigation; contextual identity relates observations without treating an address as definitive identity; temporal memory preserves when and where evidence was observed. Together, these are intended to support questions about prior paths, recurring elements, changes and the evidence relevant to an operator's next action.
+
+Implemented building blocks and experimental memory supply parts of these answers. Historical comparisons require accumulated, comparable observations. Cross-context identity resolution and policy/action reasoning remain architectural direction; before/after correlation alone does not establish causality. See [Questions RouteBrain Is Designed to Answer](docs/OPERATOR_QUESTIONS.md) for the questions and their evidence requirements.
+
 ## Components and boundaries
 
 | Component | Source | State / responsibility |

@@ -17,3 +17,12 @@
 - Pre-initialization gates PASS; new Git metadata created locally without importing any history. Publication proceeds under the owner's explicit authorization. Commit identity and post-push verification will be recorded in the publication response; no post-push content edits.
 - Live integrations remain outside these checks; LICENSE_DECISION=PENDING.
 - Candidate file inventory: docs/FILE_INVENTORY.md.
+
+## Operator-question documentation update
+
+- Scope: documentation only; operator questions grouped by maturity, evidence requirements and explicit capability limits.
+- Added docs/OPERATOR_QUESTIONS.md; linked it from focused additions to README.md and ARCHITECTURE.md.
+- No code, tests, original source, database, runtime or implemented architecture changes.
+- Validation: existing offline_check completed with 79 passed, 0 failed, 0 skipped; syntax and API import PASS. Execution used a disposable public-tree environment, an empty inherited environment and an isolated network namespace.
+- Markdown links, secret scan and operational-reference scan PASS across 218 public files; zero detected real secrets and no new operational literals. Full documentation diff reviewed before commit/push.
+- Publication target: main of the existing public repository. Commit and remote verification are reported in the session result.

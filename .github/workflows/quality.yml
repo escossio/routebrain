@@ -1,0 +1,127 @@
+name: Quality Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Offline Tests (Python 3.13)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run isolated offline checks and full test suite
+        run: python scripts/offline_check.py
+
+  public-guard:
+    name: Docs & Public Export Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate public-tree boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+          from urllib.parse import unquote
+
+          root = Path.cwd()
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+          tracked = [p for p in tracked if p]
+
+          forbidden = []
+          forbidden_patterns = [
+              re.compile(r"(^|/)\.env($|\.)", re.I),
+              re.compile(r"(^|/)logs?(/|$)", re.I),
+              re.compile(r"(^|/)data/raw(/|$)", re.I),
+              re.compile(r"(^|/)data/processed(/|$)", re.I),
+              re.compile(r"\.(har|dump|sqlite|sqlite3)$", re.I),
+          ]
+          for path in tracked:
+              if any(pattern.search(path) for pattern in forbidden_patterns):
+                  forbidden.append(path)
+          if forbidden:
+              print("Forbidden public artifacts found:")
+              print("\n".join(f" - {p}" for p in forbidden))
+              sys.exit(1)
+
+          large = []
+          for path in tracked:
+              candidate = root / path
+              if candidate.is_file() and candidate.stat().st_size > 5 * 1024 * 1024:
+                  large.append((path, candidate.stat().st_size))
+          if large:
+              print("Tracked files larger than 5 MiB found:")
+              for path, size in large:
+                  print(f" - {path}: {size} bytes")
+              sys.exit(1)
+
+          md_files = [root / p for p in tracked if p.lower().endswith(".md")]
+          link_re = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
+          broken = []
+          for md in md_files:
+              text = md.read_text(encoding="utf-8")
+              for raw_target in link_re.findall(text):
+                  target = raw_target.strip().split()[0].strip("<>")
+                  if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+                      continue
+                  path_part = unquote(target.split("#", 1)[0])
+                  if not path_part:
+                      continue
+                  resolved = (md.parent / path_part).resolve()
+                  try:
+                      resolved.relative_to(root.resolve())
+                  except ValueError:
+                      broken.append((md.relative_to(root), target, "escapes repository"))
+                      continue
+                  if not resolved.exists():
+                      broken.append((md.relative_to(root), target, "target not found"))
+          if broken:
+              print("Broken local Markdown links found:")
+              for source, target, reason in broken:
+                  print(f" - {source}: {target} ({reason})")
+              sys.exit(1)
+
+          required = ["README.md", "README.en.md", "ARCHITECTURE.md", "docs/OPERATOR_QUESTIONS.md"]
+          missing = [p for p in required if not (root / p).exists()]
+          if missing:
+              print("Required public documentation missing:")
+              print("\n".join(f" - {p}" for p in missing))
+              sys.exit(1)
+
+          print(f"PUBLIC_GUARD=PASS tracked_files={len(tracked)} markdown_files={len(md_files)}")
+          PY

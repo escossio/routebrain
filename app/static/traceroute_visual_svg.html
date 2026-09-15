@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Visual Traceroute v2</title>
+    <link rel="stylesheet" href="/static/traceroute_visual_svg.css?v=20260616-svg-ui-v2" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / Visual Traceroute v2</p>
+          <h1>SVG Renderer</h1>
+          <p class="subtitle">
+            UI paralela em SVG/HTML puro para validar se a experiência de topologia fica mais clara,
+            estável e simples de manter do que a versão Cytoscape.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/traceroute-visual/ui">Legado Cytoscape</a>
+          <a class="ghost-link" href="/route-graph/ui">RouteGraph</a>
+          <a class="ghost-link" href="/static/routebrain_icon_gallery.html">Icon Gallery</a>
+          <button id="reloadButton" class="secondary" type="button">Recarregar</button>
+        </div>
+      </header>
+
+      <section class="summary-grid">
+        <article class="summary-card">
+          <span class="summary-label">Measurement</span>
+          <strong id="measurementId">-</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Nodes</span>
+          <strong id="nodesCount">-</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Edges</span>
+          <strong id="edgesCount">-</strong>
+        </article>
+        <article class="summary-card">
+          <span class="summary-label">Clusters</span>
+          <strong id="clustersCount">-</strong>
+        </article>
+      </section>
+
+      <section class="toolbar">
+        <div class="view-buttons" role="tablist" aria-label="Modos de visualização">
+          <button id="cleanButton" class="toggle-button active" type="button">Topologia limpa</button>
+          <button id="completeButton" class="toggle-button" type="button">Topologia completa</button>
+          <button id="centerButton" class="toggle-button" type="button">Centralizar/Ajustar visão</button>
+        </div>
+        <div class="debug-pill" id="debugPill">carregando...</div>
+      </section>
+
+      <section class="workspace">
+        <aside class="panel details-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Detalhes</p>
+              <h2>Elemento selecionado</h2>
+            </div>
+          </div>
+          <div id="detailPanel" class="detail-box">Clique em um bloco.</div>
+          <div class="mini-legend">
+            <div><span class="dot dot-origin"></span>Local</div>
+            <div><span class="dot dot-private"></span>Privado</div>
+            <div><span class="dot dot-unknown"></span>ASN desconhecido</div>
+            <div><span class="dot dot-destination"></span>Destino</div>
+          </div>
+        </aside>
+
+        <section class="panel canvas-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Topologia operacional</p>
+              <h2 id="canvasTitle">Topologia limpa</h2>
+            </div>
+            <div class="status-chip" id="statusChip">aguardando dados</div>
+          </div>
+          <div id="canvas" class="canvas">
+            <svg id="linksLayer" class="links-layer" aria-hidden="true"></svg>
+            <div id="nodesLayer" class="nodes-layer" aria-label="Topologia SVG"></div>
+          </div>
+        </section>
+
+        <aside class="panel notes-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Notas técnicas</p>
+              <h2>Leitura rápida</h2>
+            </div>
+          </div>
+          <div class="spec-list" id="techNotes"></div>
+          <details class="shadow-routegraph" id="routeGraphShadowPanel">
+            <summary>
+              <span>RouteGraph v1</span>
+              <span id="routeGraphShadowStatus" class="shadow-status">shadow read</span>
+            </summary>
+            <div id="routeGraphShadowBody" class="shadow-body">aguardando dados</div>
+            <div class="shadow-actions" id="routeGraphShadowActions">
+              <a id="routeGraphShadowOpenJson" class="shadow-action" href="#" target="_blank" rel="noreferrer noopener">Abrir JSON</a>
+              <a id="routeGraphShadowOpenCytoscape" class="shadow-action" href="#" target="_blank" rel="noreferrer noopener">Abrir Cytoscape</a>
+              <button id="routeGraphShadowCopyCli" class="shadow-action" type="button">Copiar CLI</button>
+            </div>
+            <details class="experimental-cytoscape" id="routeGraphExperimentalPanel">
+              <summary>
+                <span>RouteGraph experimental</span>
+                <span id="routeGraphExperimentalStatus" class="shadow-status">sob demanda</span>
+              </summary>
+              <div class="experimental-body">
+                <div class="experimental-actions">
+                  <button id="routeGraphExperimentalLoad" class="shadow-action" type="button">Carregar visualização</button>
+                  <a id="routeGraphExperimentalOpenJson" class="shadow-action" href="#" target="_blank" rel="noreferrer noopener">Abrir JSON Cytoscape</a>
+                </div>
+                <div class="experimental-legend" aria-label="Legenda do RouteGraph experimental">
+                  <span><span class="legend-dot legend-origin"></span>Local/origem</span>
+                  <span><span class="legend-dot legend-private"></span>Privado</span>
+                  <span><span class="legend-dot legend-public"></span>Público</span>
+                  <span><span class="legend-dot legend-silent"></span>Silencioso</span>
+                  <span><span class="legend-dot legend-destination"></span>Destino</span>
+                  <span><span class="legend-dot legend-warning"></span>Warning</span>
+                </div>
+                <div id="routeGraphExperimentalMessage" class="footer-note">Sem carregamento ativo.</div>
+                <div id="routeGraphExperimentalDetail" class="footer-note experimental-detail">Selecione um nó para ver detalhes.</div>
+                <div id="routeGraphExperimentalCanvas" class="experimental-canvas hidden" aria-label="RouteGraph experimental"></div>
+              </div>
+            </details>
+          </details>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/static/traceroute_visual_svg.js?v=20260616-svg-ui-v2"></script>
+  </body>
+</html>

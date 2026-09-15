@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Inventário</title>
+    <link rel="stylesheet" href="/static/inventory.css?v=20260606-host-discovery" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / Inventory Discovery</p>
+          <h1>Inventário de hosts</h1>
+          <p class="subtitle">
+            Candidatos internos descobertos por fontes administrativas read-only. Promoção para inventário confirmado exige operador/admin e confirmação.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/questions/ui">Perguntas</a>
+          <a class="ghost-link" href="/observed-destinations/ui">Destinos</a>
+          <span id="auth-status" data-auth-status class="auth-badge auth-badge-loading">autenticação...</span>
+          <button id="refreshButton" class="primary" type="button">Atualizar</button>
+        </div>
+      </header>
+
+      <section id="summaryCards" class="summary-grid"></section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <h2>Descoberta read-only</h2>
+            <p>Consulta MikroTik apenas em comandos de leitura. Dry-run não persiste candidatos.</p>
+          </div>
+          <div id="collectStatus" class="status">pronto</div>
+        </div>
+        <div class="collect-controls">
+          <label><input id="dryRunInput" type="checkbox" checked /> dry-run</label>
+          <label>limite <input id="limitInput" type="number" min="1" max="2000" value="500" /></label>
+          <button id="collectButton" class="secondary" type="button">Descobrir hosts na MikroTik</button>
+        </div>
+        <div id="previewBox" class="preview-box hidden"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <h2>Candidatos</h2>
+            <p>Hosts candidatos separados do inventário confirmado.</p>
+          </div>
+          <select id="statusFilter">
+            <option value="">Todos</option>
+            <option value="candidate">Candidate</option>
+            <option value="promoted">Promoted</option>
+            <option value="ignored">Ignored</option>
+            <option value="merged">Merged</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>IP</th>
+                <th>MAC</th>
+                <th>Hostname</th>
+                <th>Interface</th>
+                <th>Fonte</th>
+                <th>Confiança</th>
+                <th>Status</th>
+                <th>Último visto</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="candidatesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <aside id="detailPanel" class="detail-panel hidden" aria-hidden="true">
+      <div class="detail-card">
+        <div class="detail-head">
+          <div>
+            <p class="eyebrow">Candidato</p>
+            <h2 id="detailTitle">-</h2>
+          </div>
+          <button id="closeDetailButton" type="button" class="ghost">Fechar</button>
+        </div>
+        <div id="detailBody" class="detail-body"></div>
+      </div>
+    </aside>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/static/inventory.js?v=20260606-host-discovery"></script>
+  </body>
+</html>

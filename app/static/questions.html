@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Perguntas</title>
+    <link rel="stylesheet" href="/static/questions.css?v=20260605-llm-assistant-1" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="shell">
+        <header class="topbar">
+          <div>
+            <h1>RouteBrain</h1>
+            <p>Perguntas operacionais com contexto semântico e evidência auditável.</p>
+          </div>
+          <div class="topbar-actions">
+            <a class="mini-link" href="/observed-destinations/ui">Destinos observados</a>
+            <span id="auth-status" data-auth-status class="auth-badge auth-badge-loading">autenticação...</span>
+            <div id="semanticHealth" class="health">verificando...</div>
+          </div>
+        </header>
+
+        <section class="ask-panel">
+          <textarea id="questionInput" rows="3" placeholder="o que aprendemos sobre cloudflare"></textarea>
+          <button id="askButton" type="button">Perguntar</button>
+        </section>
+
+        <section id="resultPanel" class="result-panel hidden">
+          <div class="result-header">
+            <div>
+              <span id="resultStatus" class="pill">status</span>
+              <span id="resultIntent" class="pill muted">intent</span>
+              <span id="resultConsent" class="pill muted">consentimento</span>
+            </div>
+            <span id="elapsed" class="elapsed"></span>
+          </div>
+          <h2 id="resultQuestion"></h2>
+          <p id="answerText" class="answer"></p>
+          <details id="agentObservabilityBox" class="origin-box hidden">
+            <summary>
+              <span>Origem da resposta</span>
+              <span id="agentOriginBadge" class="origin-badge"></span>
+            </summary>
+            <div id="agentObservabilityDetails" class="origin-details"></div>
+          </details>
+          <section>
+            <h3>Próximas ações</h3>
+            <div id="targetHint" class="note"></div>
+            <div id="ipOperationalBox" class="monitoring-box hidden"></div>
+            <div id="bgpVisibilityBox" class="monitoring-box hidden"></div>
+            <div id="asnMonitoringBox" class="monitoring-box hidden"></div>
+            <div id="routeProfileBox" class="monitoring-box hidden"></div>
+            <div id="actionPlanBox" class="plan-box hidden">
+              <div class="plan-head">
+                <div>
+                  <h3>Plano sugerido</h3>
+                  <p id="actionPlanSummary" class="note"></p>
+                </div>
+                <span id="actionPlanStatus" class="pill muted">planned</span>
+              </div>
+              <div id="actionPlanSteps" class="plan-steps"></div>
+            </div>
+            <div id="recommendedActions" class="actions"></div>
+            <div id="actionMessage" class="note"></div>
+          </section>
+          <div class="speech-panel">
+            <button id="speechButton" type="button" class="secondary" disabled>Ler em voz alta</button>
+            <span id="speechStatus" class="note"></span>
+          </div>
+          <div id="speechPlayer" class="speech-player hidden"></div>
+
+          <div class="grid">
+            <section>
+              <h3>Contexto semântico</h3>
+              <div id="semanticContext" class="kv"></div>
+              <p class="note">Contexto semântico é sugestivo; confirmação vem das evidências estruturadas.</p>
+            </section>
+            <section>
+              <h3>Lacunas</h3>
+              <div id="gapsList" class="list"></div>
+            </section>
+          </div>
+
+          <section>
+            <h3>Evidências</h3>
+            <div id="evidenceList" class="list"></div>
+          </section>
+
+          <section id="activePanel" class="active-panel hidden">
+            <div class="active-head">
+              <div>
+                <h3>Medição ativa</h3>
+                <p id="activeStatus" class="note"></p>
+              </div>
+              <div class="active-actions">
+                <button id="approveActiveButton" type="button" class="secondary">Aprovar medição ativa</button>
+                <button id="executeActiveButton" type="button" class="danger">Executar medição ativa</button>
+              </div>
+            </div>
+            <p class="warning">Esta ação executa ping/traceroute a partir do ambiente RouteBrain. Só prossiga se você autorizar.</p>
+            <label class="confirm-line">
+              <input id="activeConfirm" type="checkbox" />
+              Confirmo executar ping/traceroute para os alvos listados.
+            </label>
+            <div id="activeTasks" class="list"></div>
+            <div id="activeMessage" class="note"></div>
+          </section>
+
+          <section class="trace-section">
+            <div class="trace-head">
+              <h3>Traceroute</h3>
+              <button id="traceButton" type="button" class="secondary hidden">Ver caminho da rota</button>
+            </div>
+            <div id="traceState" class="note"></div>
+            <div id="traceGraph" class="trace-graph hidden"></div>
+            <div id="traceDetails" class="trace-details hidden"></div>
+            <div id="rttChart" class="rtt-chart hidden"></div>
+          </section>
+        </section>
+      </section>
+
+      <aside class="recent">
+        <h2>Recentes</h2>
+        <div id="recentList" class="recent-list"></div>
+      </aside>
+    </main>
+
+    <script src="/static/questions.js?v=20260608-temporal-comparison-1"></script>
+  </body>
+</html>

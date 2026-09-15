@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain External Routes</title>
+    <link rel="stylesheet" href="/static/external_routes.css?v=20260606-external-route-inventory" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / External Route Inventory</p>
+          <h1>Rotas externas</h1>
+          <p class="subtitle">
+            Inventário read-only dos hops, ASNs, operadoras, CDN e contexto PTT/IX vistos nos traceroutes já salvos.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/questions/ui">Perguntas</a>
+          <a class="ghost-link" href="/observed-destinations/ui">Destinos</a>
+          <span id="auth-status" data-auth-status class="auth-badge auth-badge-loading">autenticação...</span>
+          <button id="refreshButton" class="primary" type="button">Atualizar</button>
+          <button id="seedButton" class="secondary" type="button">Seed serviços</button>
+          <button id="ingestButton" class="secondary" type="button">Ingerir existentes</button>
+          <button id="enrichButton" class="secondary" type="button">Enriquecer hops</button>
+        </div>
+      </header>
+
+      <section id="summaryCards" class="summary-grid"></section>
+
+      <section class="grid-2">
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Serviços</h2>
+              <p>Resumo por serviço seedado e ingestão histórica.</p>
+            </div>
+            <div class="controls">
+              <label class="inline-control">
+                <input id="dryRunInput" type="checkbox" checked />
+                dry-run
+              </label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Serviço</th>
+                  <th>Categoria</th>
+                  <th>Targets</th>
+                  <th>Obs.</th>
+                  <th>Hops</th>
+                  <th>ASNs</th>
+                  <th>Unknown</th>
+                  <th>Último visto</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody id="servicesBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Detalhe do serviço</h2>
+              <p>Hops, edges e última execução do serviço selecionado.</p>
+            </div>
+            <div class="controls">
+              <div id="serviceStatus" class="status">carregando...</div>
+              <button id="traceServiceButton" class="primary" type="button">Mapear rota</button>
+            </div>
+          </div>
+          <div id="serviceDetail" class="detail-box">Selecione um serviço na tabela à esquerda.</div>
+        </section>
+      </section>
+
+      <section class="grid-2">
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Hops</h2>
+              <p>Hops inventariados no conjunto atual.</p>
+            </div>
+            <div id="hopsStatus" class="status">carregando...</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hop IP</th>
+                  <th>Serviços</th>
+                  <th>ASN</th>
+                  <th>Org.</th>
+                  <th>País</th>
+                  <th>Categoria</th>
+                  <th>Role</th>
+                  <th>Conf.</th>
+                  <th>Obs.</th>
+                </tr>
+              </thead>
+              <tbody id="hopsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Comparação</h2>
+              <p>Sobreposição de hops e ASNs entre dois serviços.</p>
+            </div>
+            <button id="compareButton" class="primary" type="button">Comparar</button>
+          </div>
+          <div class="compare-controls">
+            <select id="serviceASelect"></select>
+            <select id="serviceBSelect"></select>
+          </div>
+          <div id="compareBox" class="detail-box">Selecione dois serviços e compare.</div>
+        </section>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <h2>Hops desconhecidos</h2>
+            <p>Hops com category/confidence ainda não resolvidos com segurança.</p>
+          </div>
+          <div id="unknownStatus" class="status">carregando...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hop IP</th>
+                <th>Serviços</th>
+                <th>ASN</th>
+                <th>Org.</th>
+                <th>País</th>
+                <th>Categoria</th>
+                <th>Role</th>
+                <th>Conf.</th>
+                <th>Último visto</th>
+              </tr>
+            </thead>
+            <tbody id="unknownBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/static/external_routes.js?v=20260606-external-route-inventory"></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+psycopg[binary]
+python-dotenv
+requests
+rich
+mrtparse
+fastapi
+uvicorn[standard]
+playwright
+PyYAML
+openai-agents

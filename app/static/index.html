@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Portal</title>
+    <link rel="stylesheet" href="/static/index.css?v=20260607-home-portal" />
+  </head>
+  <body>
+    <main class="shell">
+      <div class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark">ROUTEBRAIN</span>
+          <span class="brand-dot">•</span>
+          <span class="brand-sub">mapa vivo da sua rede</span>
+        </div>
+        <div id="authBadge" class="auth-card auth-loading">não autenticado</div>
+      </div>
+
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">RouteBrain / Portal</p>
+          <h1>Mapa vivo da sua rede</h1>
+          <p class="subtitle">
+            Pergunte, observe destinos, visualize rotas e acompanhe o que o sistema aprendeu.
+          </p>
+        </div>
+      </header>
+
+      <section class="feature-grid">
+        <a class="feature-card feature-primary" href="/questions/ui">
+          <div class="feature-head">
+            <span class="feature-kicker">Destaque</span>
+            <span class="feature-arrow">→</span>
+          </div>
+          <h2>Perguntas operacionais</h2>
+          <p>Faça perguntas sobre IPs, domínios, ASN, rotas, BGP e ações planejadas.</p>
+        </a>
+
+        <a class="feature-card feature-primary alt" href="/route-graph/ui">
+          <div class="feature-head">
+            <span class="feature-kicker">Destaque</span>
+            <span class="feature-arrow">→</span>
+          </div>
+          <h2>RouteGraph</h2>
+          <p>Mapa visual das rotas aprendidas, clusters, hops, edges e caminhos comuns.</p>
+        </a>
+
+        <a class="feature-card feature-primary alt" href="/traceroute-visual/ui">
+          <div class="feature-head">
+            <span class="feature-kicker">Novo</span>
+            <span class="feature-arrow">→</span>
+          </div>
+          <h2>Visual Traceroute</h2>
+          <p>Spike de traceroute visual com grafo, clusters por ASN e painel lateral de detalhes.</p>
+        </a>
+
+        <a class="feature-card feature-primary alt" href="/traceroute-visual/svg-ui">
+          <div class="feature-head">
+            <span class="feature-kicker">V2</span>
+            <span class="feature-arrow">→</span>
+          </div>
+          <h2>Visual Traceroute SVG</h2>
+          <p>Renderer paralelo em SVG/HTML puro para comparar leitura de topologia e manutenção.</p>
+        </a>
+      </section>
+
+      <section class="portal-grid">
+        <a class="portal-card" href="/observed-destinations/ui">
+          <div class="portal-top">
+            <span class="portal-tag">Destinos observados</span>
+            <span class="portal-arrow">→</span>
+          </div>
+          <h3>Destinos observados</h3>
+          <p>Veja destinos acessados, ASNs, categorias, tendências e baselines.</p>
+        </a>
+
+        <a class="portal-card" href="/external-routes/ui">
+          <div class="portal-top">
+            <span class="portal-tag">Rotas externas</span>
+            <span class="portal-arrow">→</span>
+          </div>
+          <h3>Rotas externas</h3>
+          <p>Inventário de hops e roteadores externos por serviço conhecido.</p>
+        </a>
+
+        <a id="inventoryCard" class="portal-card" href="/inventory/ui">
+          <div class="portal-top">
+            <span class="portal-tag">Inventário</span>
+            <span class="portal-arrow">→</span>
+          </div>
+          <h3>Inventário</h3>
+          <p>Candidatos e hosts inventariados. Se a tela não estiver ativa, aparece como preparação.</p>
+          <span id="inventoryState" class="state-chip">verificando...</span>
+        </a>
+
+        <a class="portal-card" href="/health">
+          <div class="portal-top">
+            <span class="portal-tag">API</span>
+            <span class="portal-arrow">→</span>
+          </div>
+          <h3>Health / API</h3>
+          <p>Status básico da API e resposta simples para checagem de disponibilidade.</p>
+        </a>
+      </section>
+
+      <section class="footer-note">
+        <div>
+          <strong>RouteBrain:</strong>
+          <span>o painel de entrada para perguntas, rotas, destinos e inventário operacional.</span>
+        </div>
+        <div class="links">
+          <a href="/questions/ui">Perguntas</a>
+          <a href="/route-graph/ui">RouteGraph</a>
+          <a href="/traceroute-visual/ui">Visual Traceroute</a>
+          <a href="/traceroute-visual/svg-ui">Visual Traceroute v2</a>
+          <a href="/observed-destinations/ui">Destinos</a>
+          <a href="/external-routes/ui">Rotas externas</a>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/index.js?v=20260607-home-portal"></script>
+  </body>
+</html>

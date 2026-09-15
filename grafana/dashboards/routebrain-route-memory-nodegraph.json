@@ -1,0 +1,275 @@
+{
+  "uid": "routebrain-route-memory",
+  "title": "RouteBrain Route Memory",
+  "tags": ["routebrain", "routememory", "network", "grafana"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "DS_ROUTEBRAIN_POSTGRES",
+        "type": "datasource",
+        "query": "postgres",
+        "current": {
+          "selected": false,
+          "text": "PostgreSQL",
+          "value": "PostgreSQL"
+        },
+        "options": [],
+        "hide": 0
+      },
+      {
+        "name": "graph_uid",
+        "type": "query",
+        "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+        "refresh": 1,
+        "includeAll": false,
+        "multi": false,
+        "query": "SELECT graph_uid FROM route_memory_grafana_summary ORDER BY created_at DESC;",
+        "current": {
+          "selected": true,
+          "text": "latest",
+          "value": "latest"
+        },
+        "options": []
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "RouteBrain Route Memory",
+      "id": 1,
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "RouteBrain transforma medições de rota em memória operacional, identifica trechos compartilhados, edges comuns e divergências estruturais. Este dashboard consome views read-only geradas pelo RouteBrain SDK."
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Routes",
+      "id": 2,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+        "rawSql": "SELECT 'routes_count' AS metric, routes_count AS value FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "title": "Nodes",
+      "id": 3,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+        "rawSql": "SELECT 'nodes_count' AS metric, nodes_count AS value FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "title": "Edges",
+      "id": 4,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+        "rawSql": "SELECT 'edges_count' AS metric, edges_count AS value FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "title": "Divergences",
+      "id": 5,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 6, "w": 4, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+        "rawSql": "SELECT 'divergences_count' AS metric, divergences_count AS value FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "title": "Shared nodes",
+      "id": 6,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 6, "w": 4, "x": 16, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+        "rawSql": "SELECT 'shared_nodes_count' AS metric, shared_nodes_count AS value FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "title": "Shared edges",
+      "id": 7,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+        "rawSql": "SELECT 'shared_edges_count' AS metric, shared_edges_count AS value FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "nodeGraph",
+      "title": "Route Memory Graph",
+      "id": 8,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 18, "w": 24, "x": 0, "y": 10 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT id, title, subtitle, mainstat, secondarystat, detail__ip, detail__asn, detail__canonical_key, detail__route_ids, detail__node_type, detail__segment_type, detail__shared, detail__source_node_ids FROM route_memory_grafana_nodes_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        },
+        {
+          "refId": "B",
+          "format": "table",
+          "rawSql": "SELECT id, source, target, mainstat, secondarystat, detail__route_ids, detail__edge_type, detail__shared, detail__source_key, detail__target_key FROM route_memory_grafana_edges_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ],
+      "options": {
+        "nodes": {
+          "mainStat": "mainstat",
+          "secondaryStat": "secondarystat",
+          "title": "title",
+          "subtitle": "subtitle"
+        },
+        "edges": {
+          "mainStat": "mainstat",
+          "secondaryStat": "secondarystat"
+        },
+        "nodeFields": [
+          "id",
+          "title",
+          "subtitle",
+          "mainstat",
+          "secondarystat",
+          "detail__ip",
+          "detail__asn",
+          "detail__canonical_key",
+          "detail__route_ids",
+          "detail__node_type",
+          "detail__segment_type",
+          "detail__shared",
+          "detail__source_node_ids"
+        ],
+        "edgeFields": [
+          "id",
+          "source",
+          "target",
+          "mainstat",
+          "secondarystat",
+          "detail__route_ids",
+          "detail__edge_type",
+          "detail__shared",
+          "detail__source_key",
+          "detail__target_key"
+        ]
+      }
+    },
+    {
+      "type": "table",
+      "title": "Snapshot info",
+      "id": 9,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT graph_uid, source_node, title, graph_type, schema_version, created_at FROM route_memory_grafana_summary_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Divergences",
+      "id": 10,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT graph_uid, divergence_id, divergence_type, severity, summary, route_ids, at_segment FROM route_memory_grafana_divergences_latest;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Shared nodes",
+      "id": 11,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 36 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT id, title, subtitle, detail__ip, detail__asn, detail__canonical_key, detail__route_ids FROM route_memory_grafana_nodes_latest WHERE shared = true;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Shared edges",
+      "id": 12,
+      "datasource": "${DS_ROUTEBRAIN_POSTGRES}",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 36 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT id, source, target, detail__edge_type, detail__route_ids, detail__source_key, detail__target_key FROM route_memory_grafana_edges_latest WHERE shared = true;",
+          "datasource": "${DS_ROUTEBRAIN_POSTGRES}"
+        }
+      ]
+    }
+  ]
+}

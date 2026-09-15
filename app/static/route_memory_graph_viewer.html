@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteMemory Graph Viewer</title>
+    <link rel="stylesheet" href="/static/route_memory_graph_viewer.css?v=20260624-rmg-viewer-v1" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / RouteMemory</p>
+          <h1>RouteMemory Graph Viewer</h1>
+          <p class="subtitle">
+            Visualização experimental read-only do snapshot persistido no banco. Sem traceroute, sem rede externa,
+            sem criação de medição e sem escrita.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/route-graph/ui">RouteGraph</a>
+          <a class="ghost-link" href="/observed-destinations/ui">Destinos observados</a>
+          <button id="reloadButton" class="primary" type="button">Recarregar snapshot</button>
+        </div>
+      </header>
+
+      <section class="summary-grid" id="summaryCards"></section>
+
+      <section class="viewer-shell">
+        <aside class="panel sidebar">
+          <div class="section-header">
+            <div>
+              <h2>Snapshot</h2>
+              <p>Leitura direta do grafo persistido.</p>
+            </div>
+          </div>
+          <div class="kv-list">
+            <div class="kv"><strong>graph_uid</strong><span id="graphUid">-</span></div>
+            <div class="kv"><strong>source_node</strong><span id="sourceNode">-</span></div>
+            <div class="kv"><strong>schema_version</strong><span id="schemaVersion">-</span></div>
+            <div class="kv"><strong>created_at</strong><span id="createdAt">-</span></div>
+            <div class="kv"><strong>graph_type</strong><span id="graphType">-</span></div>
+          </div>
+
+          <div class="legend">
+            <h3>Legenda</h3>
+            <div class="legend-items">
+              <div class="legend-row"><span class="legend-swatch route1"></span><span>Rota 1</span></div>
+              <div class="legend-row"><span class="legend-swatch route2"></span><span>Rota 2</span></div>
+              <div class="legend-row"><span class="legend-swatch shared"></span><span>Shared</span></div>
+              <div class="legend-row"><span class="legend-swatch divergence"></span><span>Divergence</span></div>
+              <div class="legend-row"><span class="legend-swatch unknown"></span><span>Silent/unknown</span></div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="section-header compact">
+              <div>
+                <h2>Detalhe</h2>
+                <p>Node ou edge selecionado.</p>
+              </div>
+            </div>
+            <div id="detailBox" class="detail-box">Selecione um node ou edge.</div>
+          </div>
+        </aside>
+
+        <section class="panel graph-panel">
+          <div class="section-header">
+            <div>
+              <h2>Grafo</h2>
+              <p>Tronco comum, ramificações e divergências em SVG local.</p>
+            </div>
+            <div id="statusBox" class="status">carregando...</div>
+          </div>
+          <div class="graph-wrap">
+            <svg id="graphSvg" class="graph-svg" viewBox="0 0 1400 900" role="img" aria-label="RouteMemory graph"></svg>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/route_memory_graph_viewer.js?v=20260624-rmg-viewer-v1"></script>
+  </body>
+</html>

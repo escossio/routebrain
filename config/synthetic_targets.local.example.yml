@@ -1,0 +1,36 @@
+allowed_domains:
+  - example.com
+  - www.example.com
+  - google.com
+  - www.google.com
+  - www.openai.com
+
+blocked_domains:
+  - localhost
+  - 127.0.0.1
+  - 0.0.0.0
+  - metadata.google.internal
+
+blocked_suffixes:
+  - .local
+  - .internal
+  - .lan
+  - .home
+  - .corp
+
+blocked_networks:
+  - 127.0.0.0/8
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - 169.254.0.0/16
+  - 100.64.0.0/10
+  - ::1/128
+  - fc00::/7
+  - fe80::/10
+
+notes:
+  - "Example local policy for lab use."
+  - "Copy to config/synthetic_targets.local.yml to enable local overrides."
+  - "Do not add private systems, login pages or sensitive domains."
+  - "Instagram/Facebook are intentionally not included yet."

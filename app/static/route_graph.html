@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain RouteGraph</title>
+    <link rel="stylesheet" href="/static/route_graph.css?v=20260607-routegraph-v1-visual" />
+    <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / RouteGraph v1</p>
+          <h1>RouteGraph visual read-only</h1>
+          <p class="subtitle">
+            Mapa operacional derivado em leitura do External Route Inventory. Mostra o caminho local, CPE/ONU,
+            operadora privada, borda pública, CDN/cloud, destino e nós ainda sem classificação.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/external-routes/ui">Rotas externas</a>
+          <a class="ghost-link" href="/questions/ui">Perguntas</a>
+          <span id="auth-status" data-auth-status class="auth-badge auth-badge-loading">autenticação...</span>
+          <button id="reloadButton" class="primary" type="button">Recarregar</button>
+          <button id="resetViewButton" class="secondary" type="button">Reset view</button>
+        </div>
+      </header>
+
+      <section id="summaryCards" class="summary-grid summary-grid-tight"></section>
+
+      <section class="controls panel">
+        <div class="section-header">
+          <div>
+            <h2>Controles operacionais</h2>
+            <p>Use o filtro para destacar um serviço ou navegar no grafo global. Nenhuma ação aqui executa medição.</p>
+          </div>
+          <div id="graphStatus" class="status">carregando...</div>
+        </div>
+        <div class="filters">
+          <label>
+            <span>Serviço</span>
+            <select id="serviceSelect"></select>
+          </label>
+          <div class="filter-buttons" role="group" aria-label="Filtros visuais">
+            <button id="showAllButton" class="toggle-button active" type="button">Mostrar tudo</button>
+            <button id="serviceOnlyButton" class="toggle-button" type="button">Apenas serviço selecionado</button>
+            <button id="privatePathButton" class="toggle-button" type="button">Destacar caminho privado</button>
+            <button id="unknownOnlyButton" class="toggle-button" type="button">Mostrar somente unknown</button>
+            <button id="privateOnlyButton" class="toggle-button" type="button">Mostrar somente private</button>
+            <button id="resetVisualButton" class="toggle-button" type="button">Resetar visual</button>
+          </div>
+        </div>
+        <div id="serviceHint" class="graph-hint">
+          Selecione um serviço e use <strong>Apenas serviço selecionado</strong> para isolar a rota observada.
+        </div>
+      </section>
+
+      <section class="graph-shell">
+        <aside class="panel sidebar">
+          <div class="section-header">
+            <div>
+              <h2>Clusters</h2>
+              <p>Clústeres derivados em leitura. Clique para colapsar/expandir.</p>
+            </div>
+          </div>
+          <div id="clustersList" class="cluster-list"></div>
+          <div class="legend">
+            <h3>Legenda operacional</h3>
+            <div class="legend-items">
+              <div class="legend-row">
+                <span class="legend-dot legend-local"></span>
+                <span>Local: rede/host sob nosso lado</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-cpe"></span>
+                <span>CPE/ONU: saída local ou equipamento de acesso</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-private"></span>
+                <span>Operadora privada: IP privado observado no caminho</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-public"></span>
+                <span>Borda pública/trânsito: primeiro trecho público ou trânsito</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-cdn"></span>
+                <span>CDN/Cloud: Google, Cloudflare, Meta, Netflix etc.</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-ptt"></span>
+                <span>PTT/IX: candidato a ponto de troca</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-destination"></span>
+                <span>Destino: alvo final do serviço</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot legend-unknown"></span>
+                <span>Unknown: ainda sem classificação</span>
+              </div>
+            </div>
+            <p class="legend-note">
+              Cores e clusters são inferidos a partir de traceroutes, edges e enriquecimento. Não representam
+              administração direta do equipamento.
+            </p>
+          </div>
+        </aside>
+
+        <section class="panel graph-panel">
+          <div class="section-header">
+            <div>
+              <h2>Grafo principal</h2>
+              <p>Nodes e edges derivados do inventário externo, com zoom, pan e clique por elemento.</p>
+            </div>
+          </div>
+          <div id="graphCanvas" class="graph-canvas"></div>
+        </section>
+
+        <aside class="panel detail-panel">
+          <div class="section-header">
+            <div>
+              <h2>Detalhe</h2>
+              <p>Nó, edge ou cluster selecionado.</p>
+            </div>
+          </div>
+          <div id="detailBox" class="detail-box">Selecione um elemento do grafo.</div>
+        </aside>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/static/route_graph.js?v=20260607-routegraph-v1"></script>
+  </body>
+</html>

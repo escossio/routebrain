@@ -1,0 +1,289 @@
+{
+  "contract": "routebrain_topology_view.v0_1",
+  "version": "0.1",
+  "topology_uid": "topology-demo-example-source-example-destination-v0-1",
+  "graph_uid": "graph-demo-example-source-v1",
+  "measurement_context": "example-source_current_access_to_as64520_demo",
+  "source_node": "example-source_current_access",
+  "source_network_context": {
+    "source_asn": 64510,
+    "source_label": "example-source current access",
+    "source_city": "unknown",
+    "notes": "Example payload only; not a real operational topology."
+  },
+  "probe_method": "traceroute_icmp",
+  "created_at": "2026-06-25T00:00:00Z",
+  "scope_statement": "This topology represents observed paths from the indicated origin and does not claim universal destination topology.",
+  "nodes": [
+    {
+      "id": "origin-example-source",
+      "type": "origin",
+      "label": "example-source_current_access",
+      "subtitle": "Example origin",
+      "role": "measurement_origin",
+      "ip": null,
+      "asn": 64510,
+      "as_name": "example-source",
+      "prefix": null,
+      "confidence": "observed",
+      "evidence": [
+        {
+          "kind": "measurement_context",
+          "value": "example-source_current_access"
+        }
+      ],
+      "style_hint": {
+        "color": "blue"
+      },
+      "group_id": "group-source"
+    },
+    {
+      "id": "private-core",
+      "type": "private_core",
+      "label": "Private core",
+      "subtitle": "Aggregated private segment",
+      "role": "internal_path",
+      "ip": null,
+      "asn": null,
+      "as_name": null,
+      "prefix": null,
+      "confidence": "observed",
+      "evidence": [
+        {
+          "kind": "traceroute_hops",
+          "value": "private consecutive hops"
+        }
+      ],
+      "style_hint": {
+        "fill": "dark"
+      },
+      "group_id": "group-core"
+    },
+    {
+      "id": "silent-gap",
+      "type": "silent_gap",
+      "label": "Silent gap",
+      "subtitle": "No attributable border",
+      "role": "unknown_segment",
+      "ip": null,
+      "asn": null,
+      "as_name": null,
+      "prefix": null,
+      "confidence": "unknown",
+      "evidence": [
+        {
+          "kind": "timeout",
+          "value": "no response observed"
+        }
+      ],
+      "style_hint": {
+        "stroke": "dashed"
+      },
+      "group_id": "group-gap"
+    },
+    {
+      "id": "destination-asn",
+      "type": "destination_asn",
+      "label": "AS64520",
+      "subtitle": "example-destination context",
+      "role": "destination_context",
+      "ip": null,
+      "asn": 64520,
+      "as_name": "example-destination",
+      "prefix": null,
+      "confidence": "bgp_expected",
+      "evidence": [
+        {
+          "kind": "bgp_context",
+          "value": "expected destination ASN context"
+        }
+      ],
+      "style_hint": {
+        "color": "blue"
+      },
+      "group_id": "group-destination"
+    },
+    {
+      "id": "destination-target",
+      "type": "destination_target",
+      "label": "Target host",
+      "subtitle": "Example endpoint",
+      "role": "final_target",
+      "ip": "203.0.113.10",
+      "asn": 64520,
+      "as_name": "example-destination",
+      "prefix": "203.0.113.0/24",
+      "confidence": "observed",
+      "evidence": [
+        {
+          "kind": "target",
+          "value": "final destination in the example"
+        }
+      ],
+      "style_hint": {
+        "color": "green"
+      },
+      "group_id": "group-destination"
+    }
+  ],
+  "links": [
+    {
+      "id": "link-1",
+      "source": "origin-example-source",
+      "target": "private-core",
+      "type": "observed_link",
+      "label": "Observed access path",
+      "routes_count": 1,
+      "confidence": "observed",
+      "observed": true,
+      "inferred": false,
+      "style_hint": {
+        "style": "solid"
+      },
+      "evidence": [
+        {
+          "kind": "traceroute",
+          "value": "synthetic hop observation"
+        }
+      ]
+    },
+    {
+      "id": "link-2",
+      "source": "private-core",
+      "target": "silent-gap",
+      "type": "silent_link",
+      "label": "Silent segment",
+      "routes_count": 1,
+      "confidence": "unknown",
+      "observed": false,
+      "inferred": true,
+      "style_hint": {
+        "style": "dashed"
+      },
+      "evidence": [
+        {
+          "kind": "timeout",
+          "value": "silent gap in traceroute"
+        }
+      ]
+    },
+    {
+      "id": "link-3",
+      "source": "silent-gap",
+      "target": "destination-asn",
+      "type": "bgp_expected_path",
+      "label": "Expected BGP context",
+      "routes_count": 0,
+      "confidence": "bgp_expected",
+      "observed": false,
+      "inferred": true,
+      "style_hint": {
+        "style": "thin"
+      },
+      "evidence": [
+        {
+          "kind": "bgp",
+          "value": "reference path context only"
+        }
+      ]
+    },
+    {
+      "id": "link-4",
+      "source": "destination-asn",
+      "target": "destination-target",
+      "type": "destination_reached_link",
+      "label": "Destination reached",
+      "routes_count": 1,
+      "confidence": "observed",
+      "observed": true,
+      "inferred": false,
+      "style_hint": {
+        "style": "solid"
+      },
+      "evidence": [
+        {
+          "kind": "reachability",
+          "value": "example endpoint reached"
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "group-source",
+      "type": "origin_group",
+      "label": "Origin",
+      "nodes": [
+        "origin-example-source"
+      ],
+      "summary": "Measurement origin context."
+    },
+    {
+      "id": "group-core",
+      "type": "private_core_group",
+      "label": "Private core",
+      "nodes": [
+        "private-core"
+      ],
+      "summary": "Aggregated private segment."
+    },
+    {
+      "id": "group-gap",
+      "type": "gap_group",
+      "label": "Silent gap",
+      "nodes": [
+        "silent-gap"
+      ],
+      "summary": "No attributable public border observed."
+    },
+    {
+      "id": "group-destination",
+      "type": "destination_group",
+      "label": "Destination",
+      "nodes": [
+        "destination-asn",
+        "destination-target"
+      ],
+      "summary": "Destination ASN context and target."
+    }
+  ],
+  "legend": {
+    "title": "RouteBrain Topology View Legend",
+    "scope_notice": "This topology represents paths observed from the indicated origin. Other origins, ASNs, operators, or probe methods can produce different paths.",
+    "color_rules": {
+      "origin": "blue",
+      "private_core": "dark green",
+      "silent_gap": "gray",
+      "destination": "green",
+      "bgp_context": "blue"
+    },
+    "line_rules": {
+      "observed": "solid",
+      "inferred": "dashed",
+      "silent": "dashed",
+      "bgp_expected": "thin"
+    },
+    "confidence_rules": {
+      "observed": "directly observed hop or endpoint",
+      "inferred": "derived from partial evidence",
+      "bgp_expected": "reference context only, not observed",
+      "partial": "partial evidence",
+      "unknown": "insufficient evidence",
+      "not_attributable": "not attributable to a public ASN"
+    }
+  },
+  "warnings": [
+    "Example payload only; do not treat as universal destination topology."
+  ],
+  "limitations": [
+    "This payload is a controlled example and does not represent a real network inventory.",
+    "BGP expected path is reference context only and must not be confused with observed traceroute hops."
+  ],
+  "evidence_summary": {
+    "observed_hops": 2,
+    "silent_gaps": 1,
+    "bgp_context_items": 1,
+    "destination_reached": true,
+    "notes": "Minimal contract example."
+  }
+}

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Destinos Observados</title>
+    <link rel="stylesheet" href="/static/observed_destinations.css?v=20260604-auth-rbac-2" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / MikroTik observed destinations</p>
+          <h1>Destinos observados</h1>
+          <p class="subtitle">
+            Destinos reais acessados pela rede, coletados de forma minimizada pela MikroTik. Sem payload, sem URL completa e sem perfil de origem.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <a class="ghost-link" href="/questions/ui">Perguntas</a>
+          <span id="auth-status" data-auth-status class="auth-badge auth-badge-loading">autenticação...</span>
+          <button id="refreshButton" class="primary" type="button">Atualizar lista</button>
+          <button id="collectButton" class="secondary" type="button">Coletar agora da MikroTik</button>
+          <button id="enrichButton" class="secondary" type="button">Enriquecer pendentes</button>
+        </div>
+      </header>
+
+      <section class="summary-grid" id="summaryCards"></section>
+      <section class="panel compact-panel">
+        <div class="section-header">
+          <div>
+            <h2>Baselines</h2>
+            <p>Destinos promovidos para monitoramento explícito.</p>
+          </div>
+          <div id="baselineStatus" class="status">carregando...</div>
+        </div>
+        <div id="baselineSummary" class="baseline-summary">-</div>
+      </section>
+
+      <section class="filters">
+        <input id="searchInput" type="search" placeholder="Buscar por IP, organização ou ASN" />
+        <select id="categoryFilter">
+          <option value="">Todas as categorias</option>
+        </select>
+        <select id="asnSourceFilter">
+          <option value="">ASN source: todos</option>
+          <option value="bgp">BGP</option>
+          <option value="external">Externo</option>
+          <option value="none">Sem ASN</option>
+        </select>
+        <select id="bgpConfirmedFilter">
+          <option value="">BGP confirmado: todos</option>
+          <option value="true">Sim</option>
+          <option value="false">Não</option>
+        </select>
+        <button id="applyFiltersButton" type="button">Aplicar filtros</button>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <h2>Top destinos</h2>
+            <p>IP, porta, protocolo, ASN, fonte e confiança.</p>
+          </div>
+          <div id="topStatus" class="status">carregando...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>IP</th>
+                <th>Porta</th>
+                <th>Proto</th>
+                <th>Obs.</th>
+                <th>ASN</th>
+                <th>Organização</th>
+                <th>Categoria</th>
+                <th>Fonte ASN</th>
+                <th>Confiança</th>
+                <th>BGP</th>
+                <th>Último visto</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="destinationsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="grid-2">
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Top ASNs</h2>
+              <p>Fonte predominante e categorias associadas.</p>
+            </div>
+            <div class="hint">ASN externo inferido: útil para classificação, mas não confirmado pela BGP local.</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ASN</th>
+                  <th>Fonte</th>
+                  <th>Organização</th>
+                  <th>Destinos</th>
+                  <th>Obs.</th>
+                  <th>BGP conf.</th>
+                  <th>Ext. inf.</th>
+                  <th>Categorias</th>
+                  <th>Top destinos</th>
+                </tr>
+              </thead>
+              <tbody id="asnsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Categorias</h2>
+              <p>Distribuição operacional dos destinos.</p>
+            </div>
+          </div>
+          <div id="categoriesGrid" class="category-grid"></div>
+        </section>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <h2>Tendências</h2>
+            <p>Evolução das coletas passivas ao longo das últimas runs da MikroTik.</p>
+          </div>
+          <div id="trendStatus" class="status">carregando...</div>
+        </div>
+        <div id="trendCards" class="summary-grid trend-grid"></div>
+        <div class="grid-2">
+          <section class="panel inner-panel">
+            <div class="section-header">
+              <div>
+                <h3>Destinos em tendência</h3>
+                <p>Atual, anterior, delta e direção.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>IP</th>
+                    <th>ASN</th>
+                    <th>Org.</th>
+                    <th>Categoria</th>
+                    <th>Atual</th>
+                    <th>Anterior</th>
+                    <th>Delta</th>
+                    <th>Direção</th>
+                    <th>Último visto</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="trendDestinationsBody"></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="panel inner-panel">
+            <div class="section-header">
+              <div>
+                <h3>Tendência por ASN e categoria</h3>
+                <p>Resumo agregado na janela temporal.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ASN</th>
+                    <th>Total</th>
+                    <th>Atual</th>
+                    <th>Anterior</th>
+                    <th>Delta</th>
+                    <th>Direção</th>
+                  </tr>
+                </thead>
+                <tbody id="trendAsnsBody"></tbody>
+              </table>
+            </div>
+            <div class="table-wrap" style="margin-top: 16px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Categoria</th>
+                    <th>Total</th>
+                    <th>Atual</th>
+                    <th>Anterior</th>
+                    <th>Delta</th>
+                    <th>Direção</th>
+                  </tr>
+                </thead>
+                <tbody id="trendCategoriesBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+      <aside id="detailPanel" class="detail-panel hidden" aria-hidden="true">
+        <div class="detail-card">
+        <div class="detail-head">
+          <div>
+            <p class="eyebrow">Detalhe do destino</p>
+            <h2 id="detailTitle">-</h2>
+          </div>
+          <button id="closeDetailButton" type="button" class="ghost">Fechar</button>
+        </div>
+        <div class="detail-actions">
+          <button id="promoteButton" class="primary" type="button">Promover para baseline</button>
+          <button id="reportButton" class="secondary" type="button">Gerar relatório</button>
+          <button id="measureButton" class="warn" type="button">Traçar rota agora</button>
+          <button id="graphButton" class="ghost" type="button">Ver caminho da rota</button>
+        </div>
+        <div id="detailBody" class="detail-body"></div>
+        <div id="measurementPanel" class="measurement-panel hidden">
+          <div class="section-header">
+            <div>
+              <h3>Medição ativa da baseline</h3>
+              <p>Ping e traceroute executados sob confirmação explícita.</p>
+            </div>
+          </div>
+          <pre id="measurementSummary" class="measurement-summary">-</pre>
+        </div>
+        <div id="reportPanel" class="report-panel hidden">
+          <div class="section-header">
+            <div>
+              <h3>Relatório operacional</h3>
+              <p id="reportHeadline">-</p>
+            </div>
+          </div>
+          <div id="reportOperational" class="report-operational"></div>
+          <div id="reportSections" class="report-sections"></div>
+        </div>
+        <div id="graphPanel" class="graph-panel hidden">
+          <div class="section-header">
+            <div>
+              <h3>Traceroute graph</h3>
+              <p>Última medição ativa salva para a baseline.</p>
+            </div>
+          </div>
+          <pre id="graphSummary" class="measurement-summary">-</pre>
+        </div>
+      </div>
+    </aside>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/observed_destinations.js?v=20260604-auth-rbac-2"></script>
+  </body>
+</html>

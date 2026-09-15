@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Renderer Bake-off</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #102033;
+        --muted: #5c6b7c;
+        --line: #d8e0ea;
+        --line-strong: #aebccc;
+        --panel: #f7f9fc;
+        --accent: #0f62fe;
+        --accent-soft: #dce9ff;
+        --good: #0f7a4a;
+        --warn: #9a6700;
+        --bad: #b42318;
+        --shadow: 0 12px 30px rgba(16, 32, 51, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #fff 0%, #f6f9fc 100%);
+        color: var(--ink);
+        font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      main { max-width: 1540px; margin: 0 auto; padding: 24px; }
+      .hero, .footer, .scoreboard, .bakeoff-card, .tabbar { background: var(--bg); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+      .hero { padding: 20px 22px; display: flex; gap: 16px; justify-content: space-between; align-items: end; }
+      h1 { margin: 2px 0 8px; font-size: 30px; line-height: 1.05; letter-spacing: -0.04em; }
+      .eyebrow { margin: 0; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; }
+      .subtitle { margin: 0; color: var(--muted); max-width: 76ch; }
+      .meta { text-align: right; color: var(--muted); max-width: 34ch; }
+      .tabbar { margin-top: 18px; display: flex; gap: 8px; padding: 8px; position: sticky; top: 10px; z-index: 5; }
+      .tabbutton { appearance: none; border: 1px solid transparent; border-radius: 14px; padding: 12px 16px; background: transparent; color: var(--muted); font-weight: 700; cursor: pointer; flex: 1; }
+      .tabbutton[aria-selected="true"] { background: var(--accent-soft); color: var(--ink); border-color: #bcd3ff; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+      .bakeoff-card { padding: 16px; min-height: 820px; display: flex; flex-direction: column; }
+      .bakeoff-card.active { border-color: #9ec2ff; box-shadow: 0 18px 36px rgba(16, 32, 51, 0.12); }
+      .card-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 12px; }
+      .card-head h2 { margin: 4px 0 4px; font-size: 22px; }
+      .card-head p { margin: 0; color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 700; background: #eef4ff; color: #2449b3; }
+      .canvas { position: relative; flex: 1; min-height: 470px; border-radius: 18px; border: 1px solid var(--line); background: #fff; overflow: hidden; }
+      .footnotes { margin-top: 12px; display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .note { padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+      .note strong { display: block; margin-bottom: 4px; }
+      .spec { display: grid; gap: 6px; font-size: 13px; }
+      .scoreboard { margin-top: 16px; padding: 16px 18px; }
+      .scoreboard h3 { margin: 0 0 10px; font-size: 18px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-top: 1px solid var(--line); padding: 10px 8px; text-align: left; vertical-align: top; }
+      th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+      .final { margin-top: 16px; padding: 16px 18px; border-radius: 20px; border: 1px solid #c8dbff; background: linear-gradient(180deg, #f4f8ff, #ffffff); }
+      .final strong { display: block; margin-bottom: 6px; }
+      .tag { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 8px; background: #eef2f7; color: var(--muted); font-size: 12px; margin-right: 6px; }
+      .topology-svg { width: 100%; height: 100%; display: block; }
+      .svg-node { filter: drop-shadow(0 8px 18px rgba(16, 32, 51, 0.12)); }
+      .svg-panel-text { font: 600 13px system-ui, sans-serif; fill: #122033; }
+      .svg-small { font: 12px system-ui, sans-serif; fill: #5c6b7c; }
+      .svg-hops { font: 700 13px system-ui, sans-serif; fill: #0f62fe; }
+      .reactflow-wrap, .cy-wrap { width: 100%; height: 100%; }
+      .placeholder {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: var(--muted); text-align: center; padding: 24px; background: repeating-linear-gradient(135deg, rgba(15,98,254,0.03) 0 14px, rgba(15,98,254,0.01) 14px 28px);
+      }
+      .placeholder strong { color: var(--ink); display: block; margin-bottom: 6px; }
+      @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } .bakeoff-card { min-height: 760px; } }
+    </style>
+    <script crossorigin="anonymous" src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+    <script type="module">
+      import React from "https://esm.sh/react@18.3.1";
+      import ReactDOM from "https://esm.sh/react-dom@18.3.1/client";
+      import ReactFlow, {
+        Background,
+        Controls,
+        MarkerType,
+        MiniMap,
+        ReactFlowProvider,
+        addEdge,
+        useEdgesState,
+        useNodesState,
+      } from "https://esm.sh/reactflow@11.11.4?bundle";
+
+      const topology = [
+        { id: "local", name: "Local", type: "gateway", hops: 1, timeout: 0, unknown: 0, x: 40, y: 130, color: "#0f62fe" },
+        { id: "private", name: "Privado", type: "private", hops: 9, timeout: 0, unknown: 0, x: 330, y: 130, color: "#6b7280" },
+        { id: "asn-unknown", name: "ASN desconhecido", type: "unknown", hops: 5, timeout: 2, unknown: 3, x: 640, y: 130, color: "#f59e0b" },
+        { id: "destination", name: "Destino", type: "destination", hops: 1, timeout: 0, unknown: 0, x: 980, y: 130, color: "#0f7a4a" },
+      ];
+
+      const edges = [
+        { id: "e1", source: "local", target: "private" },
+        { id: "e2", source: "private", target: "asn-unknown" },
+        { id: "e3", source: "asn-unknown", target: "destination" },
+      ];
+
+      const esc = (value) => String(value).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+      const icon = (type) => {
+        if (type === "gateway") return `<circle cx="32" cy="32" r="20" fill="#dbeafe" stroke="#0f62fe" stroke-width="3"/><path d="M20 34h24M26 28l-6 6 6 6" stroke="#0f62fe" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+        if (type === "private") return `<path d="M32 10l20 8v10c0 10-6 17-20 24C18 45 12 38 12 28V18l20-8z" fill="#eef2f7" stroke="#6b7280" stroke-width="3"/><path d="M24 31a8 8 0 0 1 16 0v9H24z" fill="none" stroke="#475569" stroke-width="3"/>`;
+        if (type === "unknown") return `<path d="M32 12l20 8v16c0 10-8 17-20 24-12-7-20-14-20-24V20l20-8z" fill="#fff7ed" stroke="#f59e0b" stroke-width="3"/><path d="M32 20c-5 0-8 3-8 7" stroke="#b45309" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="39" r="2.8" fill="#b45309"/>`;
+        return `<rect x="12" y="12" width="40" height="40" rx="18" fill="#ecfdf3" stroke="#0f7a4a" stroke-width="3"/><path d="M22 32h20M34 24l8 8-8 8" stroke="#0f7a4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+      };
+      const nodeCard = (node, compact = false) => `
+        <div class="rb-node ${compact ? "compact" : ""}" style="left:${node.x}px; top:${node.y}px; --color:${node.color}">
+          <svg class="node-icon" viewBox="0 0 64 64" aria-hidden="true">${icon(node.type)}</svg>
+          <div class="node-copy">
+            <div class="node-name">${esc(node.name)}</div>
+            <div class="node-type">${esc(node.type)}</div>
+            <div class="node-metrics"><strong>${node.hops} hops</strong>${node.timeout ? `<span>${node.timeout} timeout</span>` : ""}${node.unknown ? `<span>${node.unknown} unknown</span>` : ""}</div>
+          </div>
+        </div>`;
+
+      function CytoscapePane() {
+        const ref = React.useRef(null);
+        React.useEffect(() => {
+          const cy = window.cytoscape({
+            container: ref.current,
+            elements: [
+              ...topology.map((n) => ({ data: { id: n.id, label: n.name, type: n.type, hops: n.hops, timeout: n.timeout, unknown: n.unknown }, position: { x: n.x, y: n.y } })),
+              ...edges.map((e) => ({ data: { ...e } })),
+            ],
+            layout: { name: "preset" },
+            style: [
+              { selector: "core", style: { "background-color": "#ffffff" } },
+              { selector: "node", style: { label: "data(label)", "background-opacity": 0, width: 220, height: 132, shape: "round-rectangle", "text-opacity": 0, "border-width": 0 } },
+              { selector: "edge", style: { width: 3, "line-color": "#5f7190", "target-arrow-color": "#5f7190", "target-arrow-shape": "triangle", "curve-style": "bezier", "arrow-scale": 1.1 } },
+            ],
+            wheelSensitivity: 0.12,
+          });
+          cy.zoom(0.95);
+          cy.center();
+          return () => cy.destroy();
+        }, []);
+        return React.createElement("div", { ref, className: "cy-wrap", "aria-label": "Cytoscape renderer" });
+      }
+
+      function FlowPane() {
+        const initialNodes = topology.map((node) => ({
+          id: node.id,
+          position: { x: node.x, y: node.y },
+          data: { label: node.name, type: node.type, hops: node.hops, timeout: node.timeout, unknown: node.unknown },
+          style: {
+            width: 240,
+            height: 138,
+            borderRadius: 20,
+            border: `2px solid ${node.color}`,
+            background: "#fff",
+            boxShadow: "0 10px 24px rgba(16,32,51,.10)",
+            padding: 14,
+          },
+          sourcePosition: "right",
+          targetPosition: "left",
+        }));
+        const initialEdges = edges.map((edge) => ({
+          ...edge,
+          type: "smoothstep",
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#5f7190" },
+          style: { stroke: "#5f7190", strokeWidth: 3 },
+        }));
+        function FlowInner() {
+          const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+          const [edgs, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+          const onConnect = React.useCallback((params) => setEdges((list) => addEdge({ ...params, type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed } }, list)), [setEdges]);
+          const updateLabel = (id, value) => setNodes((list) => list.map((node) => node.id === id ? { ...node, data: { ...node.data, label: value } } : node));
+          return React.createElement("div", { className: "reactflow-wrap" },
+            React.createElement(ReactFlow, { nodes, edges: edgs, onNodesChange, onEdgesChange, onConnect, fitView: true, nodesDraggable: true, nodesConnectable: true, elementsSelectable: true, onNodeDoubleClick: (_event, node) => updateLabel(node.id, `${node.data.label} (editado)`), style: { background: "#fff" } },
+              React.createElement(Background, { gap: 18, color: "#e6ebf2" }),
+              React.createElement(MiniMap, { zoomable: true, pannable: true, nodeStrokeColor: (n) => n.style?.borderColor || "#0f62fe", nodeColor: () => "#fff" }),
+              React.createElement(Controls, null)
+            ));
+        }
+        return React.createElement(ReactFlowProvider, null, React.createElement(FlowInner));
+      }
+
+      function SvgPane() {
+        return React.createElement("div", { className: "canvas" },
+          React.createElement("svg", { className: "topology-svg", viewBox: "0 0 1280 420", preserveAspectRatio: "xMidYMid meet", role: "img", "aria-label": "Topologia SVG" },
+            React.createElement("defs", null,
+              React.createElement("marker", { id: "arrow", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" },
+                React.createElement("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#5f7190" })
+              )
+            ),
+            edges.map((edge, index) => {
+              const a = topology.find((n) => n.id === edge.source);
+              const b = topology.find((n) => n.id === edge.target);
+              const x1 = a.x + 248;
+              const y1 = a.y + 68;
+              const x2 = b.x - 8;
+              const y2 = b.y + 68;
+              return React.createElement("line", { key: edge.id, x1, y1, x2, y2, stroke: "#5f7190", strokeWidth: 4, markerEnd: "url(#arrow)", opacity: 0.95 });
+            }),
+            topology.map((node) => React.createElement("g", { key: node.id, transform: `translate(${node.x},${node.y})`, className: "svg-node" },
+              React.createElement("rect", { x: 0, y: 0, width: 240, height: 136, rx: 22, fill: "#fff", stroke: node.color, strokeWidth: 2.5 }),
+              React.createElement("rect", { x: 14, y: 14, width: 56, height: 56, rx: 16, fill: node.color, opacity: 0.13 }),
+              React.createElement("g", { transform: "translate(14 14)", dangerouslySetInnerHTML: { __html: icon(node.type) } }),
+              React.createElement("text", { x: 84, y: 40, className: "svg-panel-text" }, node.name),
+              React.createElement("text", { x: 84, y: 62, className: "svg-small" }, node.type),
+              React.createElement("text", { x: 84, y: 92, className: "svg-hops" }, `${node.hops} hops`),
+              node.timeout ? React.createElement("text", { x: 84, y: 112, className: "svg-small" }, `${node.timeout} timeout`) : null,
+              node.unknown ? React.createElement("text", { x: 160, y: 112, className: "svg-small" }, `${node.unknown} unknown`) : null
+            ))
+          ),
+          React.createElement("div", { className: "placeholder", "aria-hidden": "true" },
+            React.createElement("div", null,
+              React.createElement("strong", null, "SVG / HTML absoluto"),
+              React.createElement("div", null, "Blocos grandes, links simples e sem dependência de runtime. É o baseline mais previsível para layout estável.")
+            )
+          )
+        );
+      }
+
+      function cardNotes(engine) {
+        if (engine === "cy") return {
+          lines: "~70 linhas de configuração + estilos",
+          limits: "Label e drag funcionam, mas a edição visual real exige mais código e o viewport é mais sensível.",
+          strengths: "Ecosistema maduro, links direcionais e layout pronto.",
+          weaknesses: "Fácil cair em ajuste fino de estilo/viewport e render técnico demais.",
+        };
+        if (engine === "flow") return {
+          lines: "~60 linhas para boot + nós/arestas",
+          limits: "Precisa de runtime React Flow via CDN e a edição de label é improvisada neste spike.",
+          strengths: "Drag nativo, conectores claros, boa sensação de diagrama.",
+          weaknesses: "Mais dependência de componentes e API de estado do que SVG puro.",
+        };
+        return {
+          lines: "~45 linhas para layout e links",
+          limits: "Drag/edição ficam por conta do código próprio; não há grafo semântico.",
+          strengths: "Layout estável, visual mais limpo, manutenção direta.",
+          weaknesses: "Recursos avançados precisam ser implementados manualmente.",
+        };
+      }
+
+      function App() {
+        const tabs = [
+          { id: "cy", label: "Cytoscape", subtitle: "grafo atual simplificado" },
+          { id: "flow", label: "React Flow", subtitle: "diagrama interativo" },
+          { id: "svg", label: "SVG/HTML", subtitle: "baseline puro" },
+        ];
+        const [active, setActive] = React.useState("cy");
+        const verdict = {
+          visual: "SVG/HTML puro",
+          maintain: "SVG/HTML puro",
+          keepCy: "não",
+        };
+        return React.createElement(React.Fragment, null,
+          React.createElement("header", { className: "hero" },
+            React.createElement("div", null,
+              React.createElement("p", { className: "eyebrow" }, "RouteBrain / visual spike"),
+              React.createElement("h1", null, "Renderer bake-off técnico"),
+              React.createElement("p", { className: "subtitle" }, "Comparativo curto e isolado entre Cytoscape, React Flow e SVG/HTML puro para a mesma topologia simbólica: Local -> Privado -> ASN desconhecido -> Destino.")
+            ),
+            React.createElement("div", { className: "meta" }, "Sem backend, sem PostgreSQL, sem dados reais. O objetivo aqui é medir fricção de implementação, estabilidade e leitura visual.")
+          ),
+          React.createElement("nav", { className: "tabbar", role: "tablist", "aria-label": "Renderers" },
+            tabs.map((tab) => React.createElement("button", {
+              key: tab.id,
+              className: "tabbutton",
+              role: "tab",
+              "aria-selected": active === tab.id,
+              onClick: () => setActive(tab.id),
+            }, `${tab.label} · ${tab.subtitle}`))
+          ),
+          React.createElement("section", { className: "grid" },
+            React.createElement("article", { className: `bakeoff-card ${active === "cy" ? "active" : ""}` },
+              React.createElement("div", { className: "card-head" },
+                React.createElement("div", null,
+                  React.createElement("span", { className: "badge" }, "Atual/simplificado"),
+                  React.createElement("h2", null, "Cytoscape"),
+                  React.createElement("p", null, "O grafo atual, reduzido ao mínimo para o teste comparativo.")
+                ),
+                React.createElement("div", { className: "tag" }, "tab 1")
+              ),
+              React.createElement("div", { className: "canvas" }, React.createElement(CytoscapePane, null)),
+              React.createElement("div", { className: "footnotes" },
+                React.createElement("div", { className: "note spec" }, React.createElement("strong", null, "Notas técnicas"), React.createElement("span", null, `Linhas aproximadas: ${cardNotes("cy").lines}`), React.createElement("span", null, `Limitações: ${cardNotes("cy").limits}`)),
+                React.createElement("div", { className: "note spec" }, React.createElement("strong", null, "Leitura"), React.createElement("span", null, `Pontos fortes: ${cardNotes("cy").strengths}`), React.createElement("span", null, `Pontos fracos: ${cardNotes("cy").weaknesses}`))
+              )
+            ),
+            React.createElement("article", { className: `bakeoff-card ${active === "flow" ? "active" : ""}` },
+              React.createElement("div", { className: "card-head" },
+                React.createElement("div", null,
+                  React.createElement("span", { className: "badge" }, "Interativo"),
+                  React.createElement("h2", null, "React Flow"),
+                  React.createElement("p", null, "Diagrama com drag nativo e conexão clara entre blocos.")
+                ),
+                React.createElement("div", { className: "tag" }, "tab 2")
+              ),
+              React.createElement("div", { className: "canvas" }, React.createElement(FlowPane, null)),
+              React.createElement("div", { className: "footnotes" },
+                React.createElement("div", { className: "note spec" }, React.createElement("strong", null, "Notas técnicas"), React.createElement("span", null, `Linhas aproximadas: ${cardNotes("flow").lines}`), React.createElement("span", null, `Limitações: ${cardNotes("flow").limits}`)),
+                React.createElement("div", { className: "note spec" }, React.createElement("strong", null, "Leitura"), React.createElement("span", null, `Pontos fortes: ${cardNotes("flow").strengths}`), React.createElement("span", null, `Pontos fracos: ${cardNotes("flow").weaknesses}`))
+              )
+            ),
+            React.createElement("article", { className: `bakeoff-card ${active === "svg" ? "active" : ""}` },
+              React.createElement("div", { className: "card-head" },
+                React.createElement("div", null,
+                  React.createElement("span", { className: "badge" }, "Baseline puro"),
+                  React.createElement("h2", null, "SVG/HTML"),
+                  React.createElement("p", null, "Topologia visual direta com posicionamento absoluto.")
+                ),
+                React.createElement("div", { className: "tag" }, "tab 3")
+              ),
+              React.createElement(SvgPane, null),
+              React.createElement("div", { className: "footnotes" },
+                React.createElement("div", { className: "note spec" }, React.createElement("strong", null, "Notas técnicas"), React.createElement("span", null, `Linhas aproximadas: ${cardNotes("svg").lines}`), React.createElement("span", null, `Limitações: ${cardNotes("svg").limits}`)),
+                React.createElement("div", { className: "note spec" }, React.createElement("strong", null, "Leitura"), React.createElement("span", null, `Pontos fortes: ${cardNotes("svg").strengths}`), React.createElement("span", null, `Pontos fracos: ${cardNotes("svg").weaknesses}`))
+              )
+            )
+          ),
+          React.createElement("section", { className: "scoreboard" },
+            React.createElement("h3", null, "Comparativo técnico"),
+            React.createElement("table", null,
+              React.createElement("thead", null,
+                React.createElement("tr", null,
+                  React.createElement("th", null, "Critério"),
+                  React.createElement("th", null, "Cytoscape"),
+                  React.createElement("th", null, "React Flow"),
+                  React.createElement("th", null, "SVG/HTML")
+                )
+              ),
+              React.createElement("tbody", null,
+                React.createElement("tr", null, React.createElement("td", null, "1. Blocos grandes com ícones e labels"), React.createElement("td", null, "Médio"), React.createElement("td", null, "Bom"), React.createElement("td", null, "Ótimo")),
+                React.createElement("tr", null, React.createElement("td", null, "2. Links direcionais"), React.createElement("td", null, "Ótimo"), React.createElement("td", null, "Ótimo"), React.createElement("td", null, "Ótimo")),
+                React.createElement("tr", null, React.createElement("td", null, "3. Drag manual"), React.createElement("td", null, "Bom"), React.createElement("td", null, "Ótimo"), React.createElement("td", null, "Ruim/nativo ausente")),
+                React.createElement("tr", null, React.createElement("td", null, "4. Editar label"), React.createElement("td", null, "Médio"), React.createElement("td", null, "Médio"), React.createElement("td", null, "Bom via código")),
+                React.createElement("tr", null, React.createElement("td", null, "5. Layout estável"), React.createElement("td", null, "Médio"), React.createElement("td", null, "Bom"), React.createElement("td", null, "Ótimo")),
+                React.createElement("tr", null, React.createElement("td", null, "6. Exportar/importar JSON"), React.createElement("td", null, "Ótimo"), React.createElement("td", null, "Ótimo"), React.createElement("td", null, "Bom se modelado")),
+                React.createElement("tr", null, React.createElement("td", null, "7. Quantidade de código"), React.createElement("td", null, "Média"), React.createElement("td", null, "Média"), React.createElement("td", null, "Baixa")),
+                React.createElement("tr", null, React.createElement("td", null, "8. Complexidade de manutenção"), React.createElement("td", null, "Média/Alta"), React.createElement("td", null, "Média"), React.createElement("td", null, "Baixa")),
+                React.createElement("tr", null, React.createElement("td", null, "9. Risco de bugs de render/viewport"), React.createElement("td", null, "Médio/Alto"), React.createElement("td", null, "Médio"), React.createElement("td", null, "Baixo")),
+                React.createElement("tr", null, React.createElement("td", null, "10. Sensação visual"), React.createElement("td", null, "Grafo técnico"), React.createElement("td", null, "Diagrama/topologia"), React.createElement("td", null, "Topologia limpa"))
+              )
+            )
+          ),
+          React.createElement("section", { className: "final" },
+            React.createElement("strong", null, "Recomendação objetiva"),
+            React.createElement("div", null, `Melhor visualmente: ${verdict.visual}. Mais simples de manter: ${verdict.maintain}. Para a experiência visual do RouteBrain, a leitura aqui aponta para abandonar Cytoscape como renderer principal e seguir com SVG/HTML próprio como base, deixando React Flow como candidato secundário se a necessidade de drag/conexão editável pesar mais.`)
+          ),
+          React.createElement("footer", { className: "footer", style: { marginTop: "16px", padding: "14px 18px", color: "var(--muted)" } }, "Abertura: /static/renderer_bakeoff.html | sem chamadas ao backend RouteBrain | topo fixo: Local -> Privado -> ASN desconhecido -> Destino")
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("app")).render(React.createElement(App));
+    </script>
+  </head>
+  <body>
+    <main id="app"></main>
+    <script>
+      window.__BAKEOFF_TOPology = true;
+    </script>
+  </body>
+</html>

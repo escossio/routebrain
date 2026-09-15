@@ -1,0 +1,355 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://routebrain.local/contracts/routebrain_topology_view_v0_1.schema.json",
+  "title": "RouteBrain Topology View v0.1",
+  "description": "Contract for contextual topology views observed from a specific measurement origin. BGP expected path is reference context only; observed links must come from real hops.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "contract",
+    "version",
+    "topology_uid",
+    "graph_uid",
+    "measurement_context",
+    "source_node",
+    "source_network_context",
+    "probe_method",
+    "created_at",
+    "scope_statement",
+    "nodes",
+    "links",
+    "groups",
+    "legend",
+    "warnings",
+    "limitations",
+    "evidence_summary"
+  ],
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "routebrain_topology_view.v0_1"
+    },
+    "version": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "topology_uid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_uid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "measurement_context": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_node": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_network_context": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "probe_method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "scope_statement": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/link"
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/group"
+      }
+    },
+    "legend": {
+      "$ref": "#/$defs/legend"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_summary": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "node_type": {
+      "type": "string",
+      "enum": [
+        "origin",
+        "local_gateway",
+        "private_core",
+        "private_hop",
+        "public_hop",
+        "possible_edge",
+        "confirmed_edge",
+        "transit_asn",
+        "destination_asn",
+        "destination_prefix",
+        "destination_target",
+        "silent_gap",
+        "unknown_gap",
+        "shared_segment",
+        "divergence_point",
+        "measurement_group",
+        "bgp_context",
+        "internet_cloud"
+      ]
+    },
+    "link_type": {
+      "type": "string",
+      "enum": [
+        "observed_link",
+        "shared_link",
+        "private_link",
+        "public_link",
+        "inferred_link",
+        "silent_link",
+        "divergent_link",
+        "bgp_expected_path",
+        "unverified_path",
+        "destination_reached_link"
+      ]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "observed",
+        "inferred",
+        "bgp_expected",
+        "partial",
+        "unknown",
+        "not_attributable"
+      ]
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "type",
+        "label",
+        "confidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "$ref": "#/$defs/node_type"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ip": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asn": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "as_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prefix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "evidence": {
+          "type": "array"
+        },
+        "style_hint": {
+          "type": "object"
+        },
+        "group_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "source",
+        "target",
+        "type",
+        "confidence",
+        "observed",
+        "inferred"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "$ref": "#/$defs/link_type"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "routes_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "observed": {
+          "type": "boolean"
+        },
+        "inferred": {
+          "type": "boolean"
+        },
+        "style_hint": {
+          "type": "object"
+        },
+        "evidence": {
+          "type": "array"
+        }
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "type",
+        "label",
+        "nodes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "legend": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "title",
+        "scope_notice",
+        "color_rules",
+        "line_rules",
+        "confidence_rules"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope_notice": {
+          "type": "string",
+          "minLength": 1
+        },
+        "color_rules": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "line_rules": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "confidence_rules": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

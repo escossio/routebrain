@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Route Learning Demo</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/static/route_learning_demo.css?v=20260608-route-learning-demo-1" />
+    <script src="https://unpkg.com/konva@9.3.18/konva.min.js"></script>
+  </head>
+  <body>
+    <main class="demo-shell">
+      <header class="demo-header">
+        <div class="title-block">
+          <p class="eyebrow">RouteBrain / Route Learning Engine</p>
+          <div class="title-row">
+            <h1>Route Learning Demo</h1>
+            <span class="badge badge-readonly">read-only</span>
+            <span class="badge badge-demo">payload demonstrativo</span>
+          </div>
+          <p class="subtitle">Protótipo visual read-only · payload demonstrativo · nenhuma ação ativa</p>
+        </div>
+        <div class="header-meta">
+          <div class="meta-line">
+            <span id="sessionStatusBadge" class="pill pill-loading">carregando...</span>
+            <span id="targetBadge" class="pill pill-target">8.8.8.8</span>
+          </div>
+          <div id="sessionSummary" class="summary-mini">aguardando payload</div>
+        </div>
+      </header>
+
+      <section class="toolbar panel">
+        <div class="toolbar-group">
+          <label class="session-picker-label" for="sessionPicker">Sessão</label>
+          <select id="sessionPicker" class="session-picker">
+            <option value="google">Google 8.8.8.8</option>
+            <option value="cloudflare">Cloudflare compartilhado</option>
+          </select>
+          <button id="playButton" type="button" class="toolbar-button">Reproduzir</button>
+          <button id="pauseButton" type="button" class="toolbar-button">Pausar</button>
+          <button id="restartButton" type="button" class="toolbar-button">Reiniciar</button>
+          <button id="fitButton" type="button" class="toolbar-button">Ajustar à tela</button>
+        </div>
+        <div class="toolbar-group toolbar-group-right">
+          <span id="playbackBadge" class="toolbar-badge">timeline parada</span>
+          <span id="frameBadge" class="toolbar-badge">frame 0/0</span>
+        </div>
+      </section>
+
+      <section class="status-banner panel">
+        <div class="status-banner-head">
+          <strong>Estado</strong>
+          <span id="demoModeBadge" class="tiny-badge">demo_mode=true</span>
+        </div>
+        <div id="statusLine" class="status-line">Carregando payload demonstrativo...</div>
+      </section>
+
+      <section class="summary-strip panel" id="summaryStrip" aria-label="Resumo operacional"></section>
+
+      <section class="demo-grid">
+        <section class="canvas-panel panel">
+          <div class="canvas-panel-head">
+            <div>
+              <p class="panel-kicker">Canvas</p>
+              <h2>Prancheta visual da rota</h2>
+            </div>
+            <div class="canvas-note">
+              <span>Konva</span>
+              <span>left-to-right tree</span>
+            </div>
+          </div>
+          <div id="canvasHost" class="canvas-host">
+            <div id="canvasLoading" class="canvas-loading">
+              <p>Carregando visualização demo...</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-panel panel">
+          <section class="panel-section">
+            <div class="panel-section-head">
+              <div>
+                <p class="panel-kicker">Detalhes</p>
+                <h2>Elemento selecionado</h2>
+              </div>
+              <span class="section-pill">click</span>
+            </div>
+            <div id="detailPanel" class="detail-panel">
+              <p class="detail-empty">Clique em um node ou edge para inspecionar o contexto.</p>
+            </div>
+          </section>
+
+          <section id="dedicatedPlanSection" class="panel-section hidden">
+            <div class="panel-section-head">
+              <div>
+                <p class="panel-kicker">Plano dedicado</p>
+                <h2>Aprendizado Cloudflare</h2>
+              </div>
+              <span class="section-pill">admin</span>
+            </div>
+            <div id="dedicatedPlanPanel" class="compact-list"></div>
+          </section>
+
+          <section class="panel-section">
+            <div class="panel-section-head">
+              <div>
+                <p class="panel-kicker">Ignorância</p>
+                <h2>Eventos explícitos</h2>
+              </div>
+              <span class="section-pill">gaps</span>
+            </div>
+            <div id="ignorancePanel" class="compact-list"></div>
+          </section>
+
+          <section class="panel-section">
+            <div class="panel-section-head">
+              <div>
+                <p class="panel-kicker">Fila</p>
+                <h2>Aprendizado orientado por uso</h2>
+              </div>
+              <span class="section-pill">queue</span>
+            </div>
+            <div id="queuePanel" class="compact-list"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/static/route_learning_demo.js?v=20260611-cloudflare-post-change-ui-1"></script>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain RouteGraph Workspace</title>
+    <link rel="stylesheet" href="/static/route_graph_workspace.css?v=20260607-routegraph-workspace-canvas-first" />
+    <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  </head>
+  <body>
+    <main id="workspaceRoot" class="workspace-shell">
+      <header class="workspace-header">
+        <div class="brand-block">
+          <p class="eyebrow">RouteBrain / RouteGraph Workspace</p>
+          <div class="title-row">
+            <h1>RouteGraph Workspace</h1>
+            <span class="read-only-badge">read-only</span>
+          </div>
+        </div>
+        <div class="header-meta">
+          <div class="header-summary">
+            <span class="header-summary-label">View: Global</span>
+            <span class="header-summary-divider">·</span>
+            <span class="header-summary-label">35 hops · 30 edges · 20 privados · 2 unknown</span>
+          </div>
+          <div id="authBadge" class="auth-pill auth-loading">não autenticado</div>
+        </div>
+      </header>
+
+      <section id="summaryCards" class="summary-strip" aria-label="Resumo do grafo"></section>
+
+      <section class="workspace-toolbar panel" aria-label="Toolbar do workspace">
+        <div class="toolbar-group toolbar-group-main">
+          <button id="homeButton" type="button" class="toolbar-button toolbar-icon" title="Home">⌂</button>
+          <button id="fitButton" type="button" class="toolbar-button toolbar-icon" title="Ajustar à tela">⛶</button>
+          <button id="autoLayoutButton" type="button" class="toolbar-button toolbar-icon" title="Auto layout">↻</button>
+          <button id="expandClustersButton" type="button" class="toolbar-button toolbar-icon" title="Expandir clusters">▣</button>
+          <button id="collapseClustersButton" type="button" class="toolbar-button toolbar-icon" title="Colapsar clusters">▢</button>
+          <button id="privateToggleButton" type="button" class="toolbar-button toolbar-icon" title="Mostrar private">P</button>
+          <button id="unknownToggleButton" type="button" class="toolbar-button toolbar-icon" title="Mostrar unknown">U</button>
+          <button id="resetVisualButton" type="button" class="toolbar-button toolbar-icon" title="Resetar visual">⟲</button>
+        </div>
+        <div class="toolbar-group toolbar-group-panels">
+          <span id="offPathBadge" class="toolbar-offpath">Itens fora do caminho: 0</span>
+          <button id="diagnosticToggleButton" type="button" class="toolbar-button toolbar-pill" title="Diagnóstico · itens fora do caminho">Diagnóstico</button>
+          <button id="clustersToggleButton" type="button" class="toolbar-button toolbar-pill" title="Mostrar/ocultar lista de clusters">Clusters</button>
+          <button id="detailsToggleButton" type="button" class="toolbar-button toolbar-pill" title="Mostrar/ocultar painel de detalhes">Detalhes</button>
+          <button id="fullscreenButton" type="button" class="toolbar-button toolbar-pill" title="Tela cheia">Full screen</button>
+        </div>
+        <span id="workspaceStatus" class="toolbar-status">somente visual · nenhuma ação ativa</span>
+      </section>
+
+      <section class="workspace-legend panel" aria-label="Legenda contextual">
+        <div class="legend-chip"><strong>Mapa</strong><span>somente elementos com ligação observada</span></div>
+        <div class="legend-chip"><strong>Diagnóstico</strong><span>itens sem edge vão para fora do mapa</span></div>
+        <div class="legend-chip"><strong>Ícone</strong><span>papel operacional provável</span></div>
+        <div class="legend-chip"><strong>Edge</strong><span>topologia real observada</span></div>
+        <div class="legend-note">Nenhuma ligação é inventada pela interface. Cluster é agrupamento visual/inferido, não equipamento real.</div>
+      </section>
+
+      <section id="diagnosticPanel" class="diagnostic-panel panel hidden" aria-label="Diagnóstico itens fora do caminho"></section>
+
+      <section class="workspace-grid">
+        <aside id="clustersPanel" class="sidebar panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Clusters</p>
+              <h2>Biblioteca compacta</h2>
+            </div>
+          </div>
+          <div id="clusterStatus" class="cluster-note">Carregando dados do grafo...</div>
+          <div id="clusterList" class="cluster-list" aria-label="Clusters do workspace">
+            <button class="cluster-item active" type="button" data-cluster="local">
+              <span class="cluster-title">Local</span>
+              <span class="cluster-meta">
+                <span class="cluster-id">local</span>
+                <span class="cluster-count">0 nodes</span>
+              </span>
+              <span class="cluster-confidence">inferred</span>
+              <span class="cluster-description">Hops privados da rede local conhecida.</span>
+            </button>
+          </div>
+          <div class="panel-subsection">
+            <div class="panel-subtitle">Serviços</div>
+            <div id="serviceList" class="service-list">
+              <button class="service-chip active" type="button" data-service="all">Todos</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="canvas-column">
+          <section class="canvas-panel panel">
+            <div class="canvas-frame">
+              <div id="canvasPlaceholder" class="canvas-placeholder">
+                <p class="canvas-label">Canvas de topologia</p>
+                <h2>Mapa operacional primeiro. Seções depois.</h2>
+                <p>O RouteGraph é renderizado neste canvas com foco em navegação, leitura e inspeção visual.</p>
+              </div>
+              <div id="routeGraphWorkspaceCanvas" class="route-graph-workspace-canvas hidden" aria-label="Canvas do grafo"></div>
+              <div class="canvas-grid"></div>
+            </div>
+          </section>
+        </section>
+
+        <aside id="detailsPanel" class="details panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Detalhes</p>
+              <h2>Contexto compacto</h2>
+            </div>
+          </div>
+          <div id="detailBody" class="detail-body">
+            <p class="detail-lead">Selecione um nó, cluster ou edge para ver contexto operacional.</p>
+            <dl class="detail-list">
+              <div><dt>IP</dt><dd>-</dd></div>
+              <div><dt>cluster</dt><dd>-</dd></div>
+              <div><dt>serviços</dt><dd>-</dd></div>
+              <div><dt>anterior/posterior</dt><dd>-</dd></div>
+              <div><dt>evidência</dt><dd>-</dd></div>
+              <div><dt>confiança</dt><dd>-</dd></div>
+            </dl>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="workspace-footer">
+        <span>Workspace v0 · somente visual · nenhuma ação ativa</span>
+        <span class="footer-dot">•</span>
+        <span>RouteBrain / RouteGraph</span>
+      </footer>
+    </main>
+
+    <script src="/static/route_graph_workspace.js?v=20260607-routegraph-workspace-canvas-first"></script>
+  </body>
+</html>

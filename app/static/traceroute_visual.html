@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RouteBrain Visual Traceroute</title>
+    <link rel="stylesheet" href="/static/traceroute_visual.css?v=20260615-cytoscape-route-summary-fix-v9" />
+    <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  </head>
+  <body>
+    <main id="root" class="page-shell">
+      <div id="bootState" class="boot-state" aria-live="polite">
+        Carregando RouteBrain Visual Traceroute...
+      </div>
+      <header class="hero">
+        <div>
+          <p class="eyebrow">RouteBrain / Route Map</p>
+          <h1>Visual Traceroute</h1>
+          <p class="subtitle">
+            Spike funcional para leitura operacional de traceroute com nós sequenciais, agrupamento por ASN e
+            painel lateral de inspeção.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="modeButton" class="secondary" type="button">Modo Topologia</button>
+          <button id="fitButton" class="secondary" type="button">Centralizar rota</button>
+          <button id="zoomInButton" class="secondary" type="button">Zoom +</button>
+          <button id="zoomOutButton" class="secondary" type="button">Zoom -</button>
+          <button id="fullscreenButton" class="secondary" type="button">Expandir</button>
+          <a class="ghost-link" href="/route-graph/ui">RouteGraph</a>
+          <a class="ghost-link" href="/traceroute-visual/svg-ui">SVG Renderer</a>
+          <a class="ghost-link" href="/questions/ui">Perguntas</a>
+          <button id="reloadButton" class="primary" type="button">Recarregar</button>
+        </div>
+      </header>
+
+      <section class="summary-strip" id="summaryStrip"></section>
+
+      <section class="workspace">
+        <aside id="sidebarPanel" class="panel sidebar">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Clusters</p>
+              <h2>ASN first</h2>
+            </div>
+          </div>
+          <div id="clusterList" class="cluster-list"></div>
+          <div class="legend">
+            <div class="legend-row"><span class="dot dot-origin"></span><span>Origem/local</span></div>
+            <div class="legend-row"><span class="dot dot-hop"></span><span>Hop normal</span></div>
+            <div class="legend-row"><span class="dot dot-asn"></span><span>ASN / upstream</span></div>
+            <div class="legend-row"><span class="dot dot-ptt"></span><span>IX / PTT</span></div>
+            <div class="legend-row"><span class="dot dot-timeout"></span><span>Timeout / unknown</span></div>
+            <div class="legend-row"><span class="dot dot-high"></span><span>Latência alta</span></div>
+            <div class="legend-row"><span class="dot dot-loss"></span><span>Perda</span></div>
+            <div class="legend-row"><span class="dot dot-destination"></span><span>Destino final</span></div>
+          </div>
+          <div class="note">
+            A clusterização usa compound nodes quando há ASN conhecido. Para hops sem ASN, o grupo visual cai em
+            fallback sem inventar dado.
+          </div>
+        </aside>
+
+        <section class="panel graph-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Traceroute</p>
+              <h2 id="graphTitle">Carregando...</h2>
+            </div>
+            <div class="status-stack">
+              <div id="graphStatus" class="status-pill">aguardando dados</div>
+              <div id="modeStatus" class="mode-pill">modo operacional</div>
+            </div>
+          </div>
+          <div id="graphCanvas" class="graph-canvas"></div>
+        </section>
+
+        <aside class="panel detail-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Detalhes</p>
+              <h2>Elemento selecionado</h2>
+            </div>
+          </div>
+          <div id="detailPanel" class="detail-box">Clique em um hop ou cluster.</div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/static/traceroute_visual.js?v=20260615-route-visual-identity-v10"></script>
+  </body>
+</html>

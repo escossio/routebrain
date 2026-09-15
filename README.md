@@ -1,5 +1,8 @@
 [Português (Brasil)](README.md) | [English](README.en.md)
 
+[![Quality Gate](https://github.com/escossio/routebrain/actions/workflows/quality.yml/badge.svg)](https://github.com/escossio/routebrain/actions/workflows/quality.yml)
+[![CodeQL](https://github.com/escossio/routebrain/actions/workflows/codeql.yml/badge.svg)](https://github.com/escossio/routebrain/actions/workflows/codeql.yml)
+
 # RouteBrain
 
 **Protótipo de inteligência e observabilidade de redes orientadas pelo uso.**

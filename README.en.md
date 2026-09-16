@@ -129,4 +129,4 @@ No operational `.env`, credentials, datasets, HARs, database dumps, deployment s
 
 ## License
 
-**LICENSE_DECISION=PENDING.** No project license has been selected for this first public version. Dependency licenses do not license RouteBrain itself. Third-party datasets, model weights and externally loaded visualization libraries have their own terms.
+This project is distributed under the [MIT License](LICENSE). Copyright (c) 2026 Leonardo Escossio. Dependencies, datasets, and other third-party components remain subject to their own terms and licenses.

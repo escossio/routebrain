@@ -121,4 +121,4 @@ Não são incluídos `.env` operacional, credenciais, datasets, HARs, dumps de b
 
 ## Licença
 
-**LICENSE_DECISION=PENDING.** Nenhuma licença de projeto foi escolhida para esta primeira versão pública. Licenças de dependências não licenciam o RouteBrain. Datasets de terceiros, pesos de modelos e bibliotecas de visualização carregadas externamente têm seus próprios termos.
+Este projeto é distribuído sob a [Licença MIT](LICENSE). Copyright (c) 2026 Leonardo Escossio. Dependências, datasets e outros componentes de terceiros permanecem sujeitos aos seus próprios termos e licenças.
